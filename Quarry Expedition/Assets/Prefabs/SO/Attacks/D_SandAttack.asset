@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fbc8d19056825a40a3f23abe27e574e, type: 3}
+  m_Name: D_SandAttack
+  m_EditorClassIdentifier: Assembly-CSharp::AttackDataSO
+  _attackName: Sand Attack
+  _description: 
+  _attackAnimation: {fileID: 0}
+  _power: 50
+  _accuracy: 0.95
+  _ammoCost: 5
+  _targetType: 0
+  _hasTurnPriority: 0
+  _appliesStatusEffect: 0
+  _statusEffectType: 0
+  _statusEffectChance: 1
+  _statusEffectGuaranteed: 0
+  _statusEffectDuration: 3
+  _isUtility: 1
+  _utilityStatTarget: 2
+  _utilityAmount: -40
+  _utilityScope: 0
