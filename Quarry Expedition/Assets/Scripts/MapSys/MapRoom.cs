@@ -12,12 +12,27 @@ public class MapRoom : MonoBehaviour
     public Color lockedColor = Color.gray;
 
     private bool isSelectable = false;
+    private MapGenerator mapGenerator;
+
+    void Awake()
+    {
+        // Якщо забув прилінкувати в інспекторі — шукаємо на цьому ж об'єкті
+        if (roomRenderer == null) roomRenderer = GetComponent<MeshRenderer>();
+        
+        // Знаходимо генератор на сцені
+        mapGenerator = FindFirstObjectByType<MapGenerator>();
+
+        // Перевірка колайдера, бо без нього OnMouseEnter/OnMouseDown на 3D об'єктах не працюють
+        if (GetComponent<Collider>() == null)
+        {
+            Debug.LogWarning($"[MapRoom] На {gameObject.name} немає Collider! Кліки мишкою не працюватимуть.");
+        }
+    }
 
     // Метод для ініціалізації кімнати після спавну
     public void SetupRoom(MapGenerator.RoomNode data)
     {
         nodeData = data;
-        // Тут можна налаштувати зовнішній вигляд (наприклад, увімкнути потрібну 3D модель)
         SetColor(normalColor);
     }
 
@@ -27,7 +42,7 @@ public class MapRoom : MonoBehaviour
         SetColor(selectable ? normalColor : lockedColor);
     }
 
-    // Логіка взаємодії через мишку (3D Collider обов'язковий на префабі!)
+    // Логіка взаємодії через мишку
     void OnMouseEnter()
     {
         if (isSelectable) SetColor(hoverColor);
@@ -50,14 +65,16 @@ public class MapRoom : MonoBehaviour
     {
         Debug.Log($"Гравець перейшов у кімнату: {nodeData.type} на позиції {nodeData.position}");
         
-        // ТУТ ЛОГІКА: 
-        // 1. Передати менеджеру гри, що ми змінили кімнату
-        // 2. Завантажити відповідну сцену або запустити івент/бій
+        if (mapGenerator != null)
+        {
+            // Передаємо генератору інформацію, яку кімнату ми обрали
+            mapGenerator.OnRoomSelected(this);
+        }
     }
 
     private void SetColor(Color color)
     {
-        if (roomRenderer != null)
+        if (roomRenderer != null && roomRenderer.material != null)
         {
             roomRenderer.material.color = color;
         }

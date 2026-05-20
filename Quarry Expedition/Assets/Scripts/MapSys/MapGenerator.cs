@@ -43,10 +43,10 @@ public class MapGenerator : MonoBehaviour
     public GameObject lineRendererPrefab;
 
     // СТРУКТУРА КАРТИ (Потрібна для генерації та Gizmos)
-    private List<List<RoomNode>> mapLayers = new List<List<RoomNode>>(); 
+    private List<List<RoomNode>> mapLayers = new List<List<RoomNode>>();  
     
     // СПИСОК СПАВНЕНИХ ОБ'ЄКТІВ (Потрібен для гри)
-    private List<MapRoom> spawnedRooms = new List<MapRoom>(); 
+    private List<MapRoom> spawnedRooms = new List<MapRoom>();  
 
     void Start()
     {
@@ -120,7 +120,6 @@ public class MapGenerator : MonoBehaviour
 
     private RoomType AssignRoomType(int layerIndex)
     {
-        // Визначаємо тип кімнати на основі поверху та випадковості
         if (layerIndex == 0) return RoomType.Enemy;
         float rand = Random.value;
         if (rand < campChance / 100f) return RoomType.Camp;
@@ -131,41 +130,32 @@ public class MapGenerator : MonoBehaviour
 
     private void SpawnMapObjects()
     {
-        // Очищаємо старі об'єкти, якщо генеруємо заново
         foreach (var room in spawnedRooms)
         {
             if (room != null) Destroy(room.gameObject);
         }
         spawnedRooms.Clear();
 
-        // Проходимо по всіх згенерованих шарах
         foreach (var layer in mapLayers)
         {
             foreach (var node in layer)
             {
-                // 1. Вибираємо правильний префаб
                 GameObject prefabToSpawn = GetPrefabByType(node.type);
                 if (prefabToSpawn == null) continue;
 
-                // 2. Конвертуємо координати з Vector2 в 3D простір (X вперед, Z вбік)
                 Vector3 spawnPos = new Vector3(node.position.x, 0, node.position.y);
-
-                // 3. Спавним об'єкт
                 GameObject roomObj = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity, this.transform);
                 
-                // 4. Додаємо і налаштовуємо скрипт кімнати
                 MapRoom mapRoom = roomObj.GetComponent<MapRoom>();
                 if (mapRoom == null) mapRoom = roomObj.AddComponent<MapRoom>();
                 
                 mapRoom.SetupRoom(node);
                 spawnedRooms.Add(mapRoom);
 
-                // 5. Малюємо лінії між кімнатами прямо в грі через LineRenderer
                 SpawnLinesForRoom(node, spawnPos);
             }
         }
 
-        // Робимо першу лінію кімнат доступною для вибору
         SetFirstLayerSelectable();
     }
 
@@ -203,7 +193,6 @@ public class MapGenerator : MonoBehaviour
     {
         foreach (var room in spawnedRooms)
         {
-            // Якщо це 0-й поверх (position.x == 0), робимо активним
             if (room.nodeData.position.x == 0)
             {
                 room.SetSelectable(true);
@@ -215,15 +204,28 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    // ВІЗУАЛІЗАЦІЯ ЧЕРЕЗ GIZMOS В РЕДАКТОРІ (БЕЗ ЗАПУСКУ ГРИ)
+    public void OnRoomSelected(MapRoom selectedRoom)
+    {
+        // 1. Спочатку блокуємо абсолютно всі кімнати на карті
+        foreach (var room in spawnedRooms)
+        {
+            room.SetSelectable(false);
+        }
+
+        // 2. Тепер відкриваємо лише ті, які зв'язані з поточною
+        foreach (var nextNode in selectedRoom.nodeData.nextRooms)
+        {
+            MapRoom nextRoomObject = spawnedRooms.Find(r => r.nodeData == nextNode);
+            if (nextRoomObject != null)
+            {
+                nextRoomObject.SetSelectable(true);
+            }
+        }
+    }
+
     private void OnDrawGizmos()
     {
-        // Якщо гра не запущена, mapLayers порожній. Щоб бачити карту завжди, згенеруємо її один раз в едиторі, якщо вона пуста
-        if (mapLayers == null || mapLayers.Count == 0)
-        {
-            // Нам потрібна перевірка, щоб не забивати пам'ять постійною генерацією в OnDrawGizmos
-            return; 
-        }
+        if (mapLayers == null || mapLayers.Count == 0) return;
 
         foreach (var layer in mapLayers)
         {
