@@ -122,7 +122,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 3562923147065297353}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6559c5af9900edb09bcd0aea016be60d, type: 3}
+  m_Script: {fileID: 11500000, guid: f85be8c62f112144fb08215c050cd51c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapRoom
   nodeData:
@@ -131,6 +131,6 @@ MonoBehaviour:
     nextRooms: []
     prevRooms: []
   roomRenderer: {fileID: 0}
-  normalColor: {r: 0.54901963, g: 0, b: 1, a: 1}
-  hoverColor: {r: 0.7745099, g: 0.5, b: 1, a: 1}
-  lockedColor: {r: 0.27607855, g: 0, b: 0.5019608, a: 1}
+  normalColor: {r: 0.33333325, g: 1, b: 0, a: 1}
+  hoverColor: {r: 0.6666666, g: 1, b: 0.5, a: 1}
+  lockedColor: {r: 0, g: 0.5019608, b: 0, a: 1}

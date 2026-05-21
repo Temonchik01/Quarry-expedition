@@ -1,5 +1,5 @@
 using UnityEngine;
-// ВИПРАВЛЕННЯ ПОМИЛКИ 1: Додаємо простір імен для роботи зі сценами
+// Додаємо простір імен для роботи зі сценами
 using UnityEngine.SceneManagement; 
 
 public class MapCameraControl : MonoBehaviour
@@ -16,10 +16,12 @@ public class MapCameraControl : MonoBehaviour
 
     void Start()
     {
+        // Автоматично шукаємо генератор, щоб за бажанням витягнути ліміти динамічно
         mapGenerator = FindFirstObjectByType<MapGenerator>();
         
         if (mapGenerator != null)
         {
+            // Розрахунок приблизного ліміту на основі довжини карти та відстані між поверхами
             maxX = (mapGenerator.mapLength - 1) * mapGenerator.xSpacing + 2f;
         }
     }
@@ -87,24 +89,25 @@ public class MapCameraControl : MonoBehaviour
         // Вивантажуємо бойову сцену з пам'яті
         SceneManager.UnloadSceneAsync(activeSceneName);
 
-        // Шукаємо генератор на сцені карти та вмикаємо назад камеру
+        // Шукаємо генератор на сцені карти
         MapGenerator generator = FindFirstObjectByType<MapGenerator>();
         if (generator != null)
         {
-            // Шукаємо камеру спочатку на самому генераторі чи його дочірніх об'єктах
+            // Знаходимо наш контейнер і вмикаємо його назад (колайдери та візуал оживають)
+            Transform containerTransform = generator.transform.Find("MapVisualContainer");
+            if (containerTransform != null)
+            {
+                containerTransform.gameObject.SetActive(true);
+            }
+
+            // Вмикаємо камеру назад
             Camera mapCam = generator.GetComponentInChildren<Camera>(true);
-            
-            // ВИПРАВЛЕННЯ ПОМИЛКИ 2: Якщо там немає, шукаємо об'єкт типу MapCameraControl на сцені
             if (mapCam == null)
             {
                 MapCameraControl cameraControl = FindFirstObjectByType<MapCameraControl>(FindObjectsInactive.Include);
                 if (cameraControl != null) mapCam = cameraControl.GetComponent<Camera>();
             }
-            
-            // Якщо все одно не знайшли — беремо головну камеру через статичне посилання
             if (mapCam == null) mapCam = Camera.main;
-            
-            // Вмикаємо її назад
             if (mapCam != null) mapCam.gameObject.SetActive(true);
         }
     }

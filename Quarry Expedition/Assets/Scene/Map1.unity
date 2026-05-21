@@ -129,7 +129,6 @@ GameObject:
   m_Component:
   - component: {fileID: 92610976}
   - component: {fileID: 92610975}
-  - component: {fileID: 92610977}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -217,18 +216,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 45, y: -90, z: 0}
---- !u!114 &92610977
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 92610974}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dab5d5c704ad00f74bbae525c96a937c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MapCameraControl
 --- !u!1 &632496529
 GameObject:
   m_ObjectHideFlags: 0
@@ -331,9 +318,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 632496529}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dab5d5c704ad00f74bbae525c96a937c, type: 3}
+  m_Script: {fileID: 11500000, guid: e1772f25b1575704e927a3604862cda7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapCameraControl
+  scrollSpeed: 10
+  edgeThreshold: 20
+  minX: 0
+  maxX: 25
 --- !u!1 &1771478342
 GameObject:
   m_ObjectHideFlags: 0
@@ -369,9 +360,9 @@ MonoBehaviour:
   xSpacing: 3
   ySpacing: 3
   yRandomOffset: 1
-  campChance: 20
-  unknownChance: 20
-  baseChance: 20
+  campChance: 0
+  unknownChance: 0
+  baseChance: 0
   enemySceneName: BAttleScene
   campSceneName: CampScene
   baseSceneName: BAttleScene
