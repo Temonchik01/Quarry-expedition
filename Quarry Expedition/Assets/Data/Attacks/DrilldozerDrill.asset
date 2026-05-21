@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 128918625da28ff4c8f6bd5c5e961195, type: 3}
-  m_Name: AcidCloud
+  m_Name: DrilldozerDrill
   m_EditorClassIdentifier: Assembly-CSharp::BtlSys.AttackData
-  attackName: Acid Cloud
-  power: 0
-  accuracy: 100
-  ammoCost: 10
-  targetType: 1
-  statusEffect: 3
-  statusChance: 1
+  attackName: Drill
+  power: 5
+  accuracy: 50
+  ammoCost: 2
+  targetType: 0
+  statusEffect: 0
+  statusChance: 0
   hasPriority: 0
-  hits: 1
+  hits: 5
   animationTrigger: 
   isStatusAttack: 0
   modifiedStat: 0
