@@ -10,7 +10,7 @@ namespace BtlSys.UI
         public void OnPointerEnter(PointerEventData eventData)
         {
             TooltipUI.Instance.Show(tooltipContent, transform.position);
-            SelectionCursorUI.Instance.SetTarget(transform);
+            SelectionCursorUI.Instance.SetTarget(transform, true);
         }
 
         public void OnPointerExit(PointerEventData eventData)

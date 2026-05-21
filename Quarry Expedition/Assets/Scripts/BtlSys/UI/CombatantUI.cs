@@ -43,11 +43,25 @@ namespace BtlSys.UI
             }
         }
 
+        private void Awake()
+        {
+            // Set pivot to left center to prevent going off-screen when adjusting anchoredPosition
+            RectTransform rect = GetComponent<RectTransform>();
+            rect.pivot = new Vector2(0f, 0.5f);
+        }
+
+        private void OnDestroy()
+        {
+            if (target != null) target.onStatsChanged -= UpdateUI;
+        }
+
         public void SetHighlight(bool active)
         {
             // Logic to move panel to the right
             RectTransform rect = GetComponent<RectTransform>();
             Vector2 anchoredPos = rect.anchoredPosition;
+            // When not highlighted, x should be 0 (left edge of container)
+            // When highlighted, x should be 50 (pushed to the right)
             anchoredPos.x = active ? 50 : 0;
             rect.anchoredPosition = anchoredPos;
         }

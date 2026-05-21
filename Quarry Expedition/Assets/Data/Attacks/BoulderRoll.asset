@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 128918625da28ff4c8f6bd5c5e961195, type: 3}
+  m_Name: BoulderRoll
+  m_EditorClassIdentifier: Assembly-CSharp::BtlSys.AttackData
+  attackName: Roll
+  power: 5
+  accuracy: 95
+  ammoCost: 0
+  targetType: 0
+  statusEffect: 0
+  statusChance: 0
+  hasPriority: 0
+  hits: 1
+  animationTrigger: 
+  isStatusAttack: 0
+  modifiedStat: 0
+  statModifierValue: 0

@@ -32,7 +32,7 @@ namespace BtlSys
         public System.Action onStatsChanged;
         public System.Action onDeath;
 
-        private void Start()
+        private void Awake()
         {
             Initialize();
         }
@@ -55,6 +55,13 @@ namespace BtlSys
 
             if (currentHP <= 0)
             {
+                // Add this block to turn the sprite black
+                SpriteRenderer spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+                if (spriteRenderer != null)
+                {
+                    spriteRenderer.color = Color.black;
+                }
+                
                 onDeath?.Invoke();
             }
         }

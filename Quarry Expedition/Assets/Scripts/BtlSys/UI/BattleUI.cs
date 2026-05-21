@@ -33,20 +33,47 @@ namespace BtlSys.UI
         private Combatant currentHero;
         private List<CombatantUI> heroUIs = new List<CombatantUI>();
 
+        private bool isTargeting = false;
+        private AttackData pendingAttack = null;
+        private List<Combatant> potentialTargets = new List<Combatant>();
+        private int currentTargetIndex = 0;
+
+        private void OnEnable()
+        {
+            if (BattleManager.Instance != null)
+            {
+                BattleManager.Instance.onHeroTurnStarted += ShowActionPanel;
+                BattleManager.Instance.onRoundExecutionStarted += HideAllPanels;
+                BattleManager.Instance.onBattleEnded += ShowEndBattle;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (BattleManager.Instance != null)
+            {
+                BattleManager.Instance.onHeroTurnStarted -= ShowActionPanel;
+                BattleManager.Instance.onRoundExecutionStarted -= HideAllPanels;
+                BattleManager.Instance.onBattleEnded -= ShowEndBattle;
+            }
+        }
+
         private void Start()
         {
-            BattleManager.Instance.onHeroTurnStarted += ShowActionPanel;
-            BattleManager.Instance.onRoundExecutionStarted += HideAllPanels;
-            BattleManager.Instance.onBattleEnded += ShowEndBattle;
-
             InitializeHeroInfo();
-            HideAllPanels();
+            
+            subActionPanel.SetActive(false);
+            foreach (var ui in heroUIs) ui.SetHighlight(false);
 
             attackButton.onClick.AddListener(() => OnMainActionClicked("Attack"));
             specialsButton.onClick.AddListener(() => ShowSubMenu("Specials"));
             itemsButton.onClick.AddListener(() => ShowSubMenu("Items"));
-            reloadButton.onClick.AddListener(() => SelectAction(new BattleAction(currentHero, null, null) { isReload = true }));
-            defendButton.onClick.AddListener(() => SelectAction(new BattleAction(currentHero, null, null) { isDefend = true }));
+            reloadButton.onClick.AddListener(() => {
+                if (currentHero != null) SelectAction(new BattleAction(currentHero, null, null) { isReload = true });
+            });
+            defendButton.onClick.AddListener(() => {
+                if (currentHero != null) SelectAction(new BattleAction(currentHero, null, null) { isDefend = true });
+            });
             backButton.onClick.AddListener(HideSubMenu);
         }
 
@@ -62,14 +89,31 @@ namespace BtlSys.UI
 
         private void ShowActionPanel(Combatant hero)
         {
+            Debug.Log($"[BattleUI] ShowActionPanel called for {hero.name}");
             currentHero = hero;
+            
+            if (actionPanel == null)
+            {
+                Debug.LogError("[BattleUI] ActionPanel reference is MISSING!");
+                return;
+            }
+
             actionPanel.SetActive(true);
             subActionPanel.SetActive(false);
 
-            // Position Action Panel to the right of the hero
-            Vector3 screenPos = Camera.main.WorldToScreenPoint(hero.transform.position);
-            RectTransform panelRect = actionPanel.GetComponent<RectTransform>();
-            panelRect.position = screenPos + new Vector3(150, 0, 0);
+            // Position Action Panel in world space next to the hero
+            // Move it further to the right (3.5f) to avoid the screen-space HeroesInfo HUD
+            // and clearly forward (-1.0f) to prevent any clipping with world sprites
+            Canvas canvas = actionPanel.GetComponentInParent<Canvas>();
+            if (canvas != null && canvas.renderMode == RenderMode.WorldSpace)
+            {
+                canvas.transform.position = hero.transform.position + new Vector3(3.5f, 1.5f, -1.0f);
+                Debug.Log($"[BattleUI] World Space ActionPanel positioned at {canvas.transform.position}");
+            }
+            else
+            {
+                Debug.LogWarning("[BattleUI] ActionPanel is not in a World Space Canvas! Position might be wrong.");
+            }
 
             // Highlight the active hero UI
             foreach (var ui in heroUIs)
@@ -83,18 +127,101 @@ namespace BtlSys.UI
             actionPanel.SetActive(false);
             subActionPanel.SetActive(false);
             foreach (var ui in heroUIs) ui.SetHighlight(false);
+            TooltipUI.Instance.Hide();
+            SelectionCursorUI.Instance.SetTarget(null);
+            isTargeting = false;
+        }
+
+        private void Update()
+        {
+            if (isTargeting)
+            {
+                HandleTargeting();
+            }
+        }
+
+        private void HandleTargeting()
+        {
+            // Mouse hover highlighting
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit2D hit = Physics2D.GetRayIntersection(ray);
+            if (hit.collider != null)
+            {
+                Combatant hovered = hit.collider.GetComponentInParent<Combatant>();
+                if (hovered != null && potentialTargets.Contains(hovered))
+                {
+                    SelectionCursorUI.Instance.SetTarget(hovered.transform);
+                    
+                    if (Input.GetMouseButtonDown(0))
+                    {
+                        ConfirmTarget(hovered);
+                        return;
+                    }
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
+            {
+                CancelTargeting();
+            }
+
+            // Keyboard cycling
+            if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
+            {
+                CycleTarget(1);
+            }
+            if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
+            {
+                CycleTarget(-1);
+            }
+            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+            {
+                ConfirmTarget(potentialTargets[currentTargetIndex]);
+            }
+        }
+
+        private void CycleTarget(int direction)
+        {
+            currentTargetIndex = (currentTargetIndex + direction + potentialTargets.Count) % potentialTargets.Count;
+            SelectionCursorUI.Instance.SetTarget(potentialTargets[currentTargetIndex].transform);
+        }
+
+        private void ConfirmTarget(Combatant target)
+        {
+            SelectAction(new BattleAction(currentHero, new List<Combatant> { target }, pendingAttack));
+            isTargeting = false;
+        }
+
+        private void CancelTargeting()
+        {
+            isTargeting = false;
+            SelectionCursorUI.Instance.SetTarget(null);
+            actionPanel.SetActive(true);
+        }
+
+        private void EnterTargetingMode(AttackData attack)
+        {
+            actionPanel.SetActive(false);
+            subActionPanel.SetActive(false);
+            isTargeting = true;
+            pendingAttack = attack;
+            
+            // For single target moves, target enemies
+            potentialTargets = BattleManager.Instance.enemyTeam.Where(e => e.currentHP > 0).ToList();
+            if (potentialTargets.Count > 0)
+            {
+                currentTargetIndex = 0;
+                SelectionCursorUI.Instance.SetTarget(potentialTargets[currentTargetIndex].transform);
+            }
         }
 
         private void OnMainActionClicked(string actionType)
         {
+            if (currentHero == null) return;
+
             if (actionType == "Attack")
             {
-                var target = BattleManager.Instance.enemyTeam.FirstOrDefault(e => e.currentHP > 0);
-                if (target != null)
-                {
-                    SelectAction(new BattleAction(currentHero, new List<Combatant> { target }, null));
-                    SelectionCursorUI.Instance.SetTarget(target.transform);
-                }
+                EnterTargetingMode(null); // Basic attack
             }
         }
 
@@ -107,12 +234,22 @@ namespace BtlSys.UI
                 if (child.gameObject != backButton.gameObject) Destroy(child.gameObject);
             }
 
-            if (category == "Specials")
+            if (category == "Specials" && currentHero != null && currentHero.data != null && currentHero.data.specials != null)
             {
                 foreach (var spec in currentHero.data.specials)
                 {
-                    string label = $"{spec.attackName} (Acc: {spec.accuracy}, Pow: {spec.power})";
-                    CreateSubButton(label, () => SelectAction(new BattleAction(currentHero, GetTargets(spec), spec)));
+                    AttackData localSpec = spec;
+                    string label = $"{localSpec.attackName} (Acc: {localSpec.accuracy}, Pow: {localSpec.power})";
+                    CreateSubButton(label, () => {
+                        if (localSpec.targetType == TargetType.SingleTarget)
+                        {
+                            EnterTargetingMode(localSpec);
+                        }
+                        else
+                        {
+                            SelectAction(new BattleAction(currentHero, GetTargets(localSpec), localSpec));
+                        }
+                    });
                 }
             }
             else if (category == "Items")

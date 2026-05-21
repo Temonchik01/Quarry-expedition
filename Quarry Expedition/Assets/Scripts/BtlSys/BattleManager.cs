@@ -18,13 +18,29 @@ namespace BtlSys
             this.user = user;
             this.targets = targets;
             this.attack = attack;
-            this.speed = user.currentSpeed + (attack != null && attack.hasPriority ? 1000 : 0);
+            
+            if (user != null)
+            {
+                this.speed = user.currentSpeed + (attack != null && attack.hasPriority ? 1000 : 0);
+            }
+            else
+            {
+                this.speed = 0;
+            }
         }
     }
 
     public class BattleManager : MonoBehaviour
     {
-        public static BattleManager Instance { get; private set; }
+        private static BattleManager _instance;
+        public static BattleManager Instance 
+        { 
+            get 
+            {
+                if (_instance == null) _instance = Object.FindFirstObjectByType<BattleManager>();
+                return _instance;
+            }
+        }
 
         public List<Combatant> playerTeam = new List<Combatant>();
         public List<Combatant> enemyTeam = new List<Combatant>();
@@ -40,7 +56,7 @@ namespace BtlSys
 
         private void Awake()
         {
-            Instance = this;
+            _instance = this;
         }
 
         private void Start()
@@ -50,13 +66,31 @@ namespace BtlSys
 
         public void StartBattle()
         {
-            // Collect all combatants in scene if not assigned
-            if (playerTeam.Count == 0) playerTeam.AddRange(FindObjectsByType<Combatant>(FindObjectsSortMode.None).Where(c => c.isPlayer));
-            if (enemyTeam.Count == 0) enemyTeam.AddRange(FindObjectsByType<Combatant>(FindObjectsSortMode.None).Where(c => !c.isPlayer));
+            Debug.Log("[BattleManager] Starting Battle...");
+            // Clear lists to ensure fresh start
+            playerTeam.Clear();
+            enemyTeam.Clear();
+
+            var allCombatants = Object.FindObjectsByType<Combatant>(FindObjectsSortMode.None);
+            Debug.Log($"[BattleManager] Found {allCombatants.Length} combatants in scene.");
+
+            foreach (var c in allCombatants)
+            {
+                c.Initialize(); // Ensure they are initialized
+                if (c.isPlayer) playerTeam.Add(c);
+                else enemyTeam.Add(c);
+            }
+            
+            Debug.Log($"[BattleManager] Teams populated: Players={playerTeam.Count}, Enemies={enemyTeam.Count}");
 
             foreach (var c in playerTeam.Concat(enemyTeam))
             {
                 c.onDeath += () => CheckBattleEnd();
+            }
+
+            if (playerTeam.Count == 0 || enemyTeam.Count == 0)
+            {
+                Debug.LogError("[BattleManager] Battle cannot start: One or more teams are empty!");
             }
 
             StartNewRound();
@@ -64,6 +98,7 @@ namespace BtlSys
 
         private void StartNewRound()
         {
+            Debug.Log("[BattleManager] Starting New Round...");
             roundActions.Clear();
             currentHeroInputIndex = 0;
             
@@ -73,7 +108,11 @@ namespace BtlSys
                 c.TickStatusEffects();
             }
 
-            if (CheckBattleEnd()) return;
+            if (CheckBattleEnd()) 
+            {
+                Debug.Log("[BattleManager] Battle ended during round start check.");
+                return;
+            }
 
             currentState = BattleState.PlayerInput;
             RequestNextHeroInput();
@@ -86,16 +125,19 @@ namespace BtlSys
                 var hero = playerTeam[currentHeroInputIndex];
                 if (hero.currentHP > 0)
                 {
+                    Debug.Log($"[BattleManager] Requesting input for hero: {hero.name} (HP: {hero.currentHP})");
                     onHeroTurnStarted?.Invoke(hero);
                 }
                 else
                 {
+                    Debug.Log($"[BattleManager] Hero {hero.name} is down, skipping turn.");
                     currentHeroInputIndex++;
                     RequestNextHeroInput();
                 }
             }
             else
             {
+                Debug.Log("[BattleManager] All heroes have acted. Generating enemy actions...");
                 GenerateEnemyActions();
                 ExecuteRound();
             }
@@ -135,6 +177,7 @@ namespace BtlSys
 
             foreach (var action in sortedActions)
             {
+                if (action == null || action.user == null) continue;
                 if (action.user.currentHP <= 0) continue;
                 if (CheckBattleEnd()) break;
 
@@ -210,13 +253,13 @@ namespace BtlSys
 
         private bool CheckBattleEnd()
         {
-            if (playerTeam.All(p => p.currentHP <= 0))
+            if (playerTeam.Count > 0 && playerTeam.All(p => p.currentHP <= 0))
             {
                 currentState = BattleState.Defeat;
                 onBattleEnded?.Invoke("You Lost");
                 return true;
             }
-            if (enemyTeam.All(e => e.currentHP <= 0))
+            if (enemyTeam.Count > 0 && enemyTeam.All(e => e.currentHP <= 0))
             {
                 currentState = BattleState.Victory;
                 onBattleEnded?.Invoke("You Won");
