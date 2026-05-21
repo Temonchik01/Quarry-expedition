@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MapGenerator : MonoBehaviour
 {
@@ -34,6 +35,12 @@ public class MapGenerator : MonoBehaviour
     public int campChance = 20; // Відсоток шансів для кімнати з кемпом
     public int unknownChance = 20; // Відсоток шансів для невідомої кімнати
     public int baseChance = 20; // Відсоток шансів для кімнати з ворожою базою
+
+    [Header("Scene Names")]
+    public string enemySceneName = "BattleScene";
+    public string campSceneName = "CampScene";
+    public string baseSceneName = "BaseScene";
+    public string unknownSceneName = "EventScene";
 
     [Header("3D Prefabs")]
     public GameObject enemyPrefab;
@@ -178,14 +185,27 @@ public class MapGenerator : MonoBehaviour
         foreach (var nextNode in node.nextRooms)
         {
             Vector3 endPos = new Vector3(nextNode.position.x, 0, nextNode.position.y);
-            GameObject lineObj = Instantiate(lineRendererPrefab, this.transform);
-            LineRenderer lr = lineObj.GetComponent<LineRenderer>();
-            if (lr != null)
+            
+            // 1. Рахуємо центр між двома кімнатами (тут стоятиме куб-доріжка)
+            Vector3 midPoint = (startPos + endPos) / 2f;
+            
+            // 2. Рахуємо відстань (це буде довжина нашої доріжки)
+            float distance = Vector3.Distance(startPos, endPos);
+
+            // 3. Спавнимо куб безпосередньо у midPoint
+            GameObject lineObj = Instantiate(lineRendererPrefab, midPoint, Quaternion.identity, this.transform);
+            
+            // 4. Повертаємо куб у бік наступної кімнати
+            Vector3 direction = (endPos - startPos).normalized;
+            if (direction != Vector3.zero)
             {
-                lr.positionCount = 2;
-                lr.SetPosition(0, startPos);
-                lr.SetPosition(1, endPos);
+                lineObj.transform.forward = direction;
             }
+
+            // 5. Масштабуємо куб: товщина X та Y залишаються з префабу, а по Z розтягуємо на довжину відстані
+            // (Якщо в твоїй моделі довжина — це вісь X, то поміняй distance місцями з lineObj.transform.localScale.x)
+            Vector3 currentScale = lineObj.transform.localScale;
+            lineObj.transform.localScale = new Vector3(currentScale.x/4, currentScale.y, distance);
         }
     }
 
@@ -220,6 +240,33 @@ public class MapGenerator : MonoBehaviour
             {
                 nextRoomObject.SetSelectable(true);
             }
+        }
+
+        // 3. ПЕРЕХІД НА СЦЕНУ КІМНАТИ
+        LoadRoomScene(selectedRoom.nodeData.type);
+    }
+
+    private void LoadRoomScene(RoomType type)
+    {
+        string sceneToLoad = "";
+
+        switch (type)
+        {
+            case RoomType.Enemy: sceneToLoad = enemySceneName; break;
+            case RoomType.Camp: sceneToLoad = campSceneName; break;
+            case RoomType.Base: sceneToLoad = baseSceneName; break;
+            case RoomType.Unknown: sceneToLoad = unknownSceneName; break;
+        }
+
+        if (!string.IsNullOrEmpty(sceneToLoad))
+        {
+            Debug.Log($"[MapGenerator] Завантаження сцени: {sceneToLoad}");
+
+            // Тимчасово вимикаємо головну камеру карти, щоб вона не рендерила під кубами карти сцену бою
+            if (Camera.main != null) Camera.main.gameObject.SetActive(false);
+
+            // Завантажуємо сцену аддитивно (накладаємо поверх карти)
+            SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Additive);
         }
     }
 
