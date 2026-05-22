@@ -67,6 +67,12 @@ namespace BtlSys
         public void StartBattle()
         {
             Debug.Log("[BattleManager] Starting Battle...");
+            
+            if (ProgressionManager.Instance != null)
+            {
+                ProgressionManager.Instance.hasHealedInCamp = false;
+            }
+
             // Clear lists to ensure fresh start
             playerTeam.Clear();
             enemyTeam.Clear();
@@ -79,6 +85,12 @@ namespace BtlSys
                 c.Initialize(); // Ensure they are initialized
                 if (c.isPlayer) playerTeam.Add(c);
                 else enemyTeam.Add(c);
+            }
+
+            // Load persistent state if it exists
+            if (ProgressionManager.Instance != null)
+            {
+                ProgressionManager.Instance.LoadPlayerState(playerTeam);
             }
             
             Debug.Log($"[BattleManager] Teams populated: Players={playerTeam.Count}, Enemies={enemyTeam.Count}");
@@ -262,6 +274,13 @@ namespace BtlSys
             if (enemyTeam.Count > 0 && enemyTeam.All(e => e.currentHP <= 0))
             {
                 currentState = BattleState.Victory;
+
+                // Save state upon winning
+                if (ProgressionManager.Instance != null)
+                {
+                    ProgressionManager.Instance.SavePlayerState(playerTeam);
+                }
+
                 onBattleEnded?.Invoke("You Won");
                 return true;
             }

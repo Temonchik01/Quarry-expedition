@@ -15,7 +15,7 @@ MonoBehaviour:
   attackName: Shrapnel
   power: 5
   accuracy: 70
-  ammoCost: 0
+  ammoCost: 2
   targetType: 1
   statusEffect: 0
   statusChance: 0

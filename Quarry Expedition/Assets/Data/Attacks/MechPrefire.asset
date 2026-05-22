@@ -15,7 +15,7 @@ MonoBehaviour:
   attackName: Prefire
   power: 10
   accuracy: 100
-  ammoCost: 0
+  ammoCost: 6
   targetType: 0
   statusEffect: 0
   statusChance: 1

@@ -17,8 +17,9 @@ namespace BtlSys.UI
             if (_mainCamera == null) return;
 
             // Makes the UI always face the camera perfectly
-            transform.LookAt(transform.position + _mainCamera.transform.rotation * Vector3.forward,
-                             _mainCamera.transform.rotation * Vector3.up);
+            // We want the negative Z (the front of the canvas) to face the camera
+            // So we make the positive Z face away from the camera
+            transform.rotation = Quaternion.LookRotation(transform.position - _mainCamera.transform.position, _mainCamera.transform.up);
         }
     }
 }

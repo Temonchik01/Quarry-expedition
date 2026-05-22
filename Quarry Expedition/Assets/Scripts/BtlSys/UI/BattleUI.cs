@@ -29,6 +29,8 @@ namespace BtlSys.UI
         [Header("End Battle UI")]
         public GameObject endBattlePanel;
         public TextMeshProUGUI endBattleText;
+        public Button continueButton;
+        public Button restartButton;
 
         private Combatant currentHero;
         private List<CombatantUI> heroUIs = new List<CombatantUI>();
@@ -75,6 +77,29 @@ namespace BtlSys.UI
                 if (currentHero != null) SelectAction(new BattleAction(currentHero, null, null) { isDefend = true });
             });
             backButton.onClick.AddListener(HideSubMenu);
+
+            if (continueButton != null) continueButton.onClick.AddListener(ReturnToMap);
+            if (restartButton != null) restartButton.onClick.AddListener(RestartRun);
+        }
+
+        private void ReturnToMap()
+        {
+            if (MapGenerator.Instance != null)
+            {
+                MapGenerator.Instance.ReactivateMap();
+                UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(gameObject.scene);
+            }
+            else
+            {
+                // Fallback if Map scene wasn't additive
+                UnityEngine.SceneManagement.SceneManager.LoadScene("Map");
+            }
+        }
+
+        private void RestartRun()
+        {
+            if (ProgressionManager.Instance != null) ProgressionManager.Instance.ResetProgression();
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Map");
         }
 
         private void InitializeHeroInfo()
@@ -297,6 +322,14 @@ namespace BtlSys.UI
             HideAllPanels();
             endBattlePanel.SetActive(true);
             endBattleText.text = message;
+
+            // Center the end panel in screen space (assuming it's in an Overlay Canvas)
+            RectTransform rt = endBattlePanel.GetComponent<RectTransform>();
+            rt.anchoredPosition = Vector2.zero;
+
+            bool won = message.Contains("Won");
+            if (continueButton != null) continueButton.gameObject.SetActive(won);
+            if (restartButton != null) restartButton.gameObject.SetActive(!won);
         }
     }
 }

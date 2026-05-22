@@ -47,6 +47,19 @@ namespace BtlSys
             currentSpeed = data.speed;
         }
 
+        public void LoadState(int hp, int ammo)
+        {
+            currentHP = hp;
+            currentAmmo = ammo;
+            onStatsChanged?.Invoke();
+            
+            if (currentHP <= 0)
+            {
+                SpriteRenderer spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+                if (spriteRenderer != null) spriteRenderer.color = Color.black;
+            }
+        }
+
         public void TakeDamage(int rawDamage)
         {
             int actualDamage = Mathf.Max(1, rawDamage - currentDefense);

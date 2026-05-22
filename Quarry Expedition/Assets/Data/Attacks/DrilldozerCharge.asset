@@ -15,7 +15,7 @@ MonoBehaviour:
   attackName: Charge
   power: 5
   accuracy: 95
-  ammoCost: 0
+  ammoCost: 10
   targetType: 0
   statusEffect: 0
   statusChance: 0

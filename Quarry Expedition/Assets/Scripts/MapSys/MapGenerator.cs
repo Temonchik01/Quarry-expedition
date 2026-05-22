@@ -37,10 +37,10 @@ public class MapGenerator : MonoBehaviour
     public int baseChance = 20; // Відсоток шансів для кімнати з ворожою базою
 
     [Header("Scene Names")]
-    public string enemySceneName = "BattleScene";
-    public string campSceneName = "CampScene";
-    public string baseSceneName = "BaseScene";
-    public string unknownSceneName = "EventScene";
+    public string enemySceneName = "Battle";
+    public string campSceneName = "Camp";
+    public string baseSceneName = "Base";
+    public string unknownSceneName = "Event";
 
     [Header("3D Prefabs")]
     public GameObject enemyPrefab;
@@ -49,16 +49,32 @@ public class MapGenerator : MonoBehaviour
     public GameObject unknownPrefab;
     public GameObject lineRendererPrefab;
 
+    public static MapGenerator Instance { get; private set; }
+    private Camera mapCamera;
+
     // СТРУКТУРА КАРТИ (Потрібна для генерації та Gizmos)
     private List<List<RoomNode>> mapLayers = new List<List<RoomNode>>();  
     
     // СПИСОК СПАВНЕНИХ ОБ'ЄКТІВ (Потрібен для гри)
     private List<MapRoom> spawnedRooms = new List<MapRoom>();  
+    private GameObject mapContainer; // Контейнер для візуальних об'єктів карти
+
+    private void Awake()
+    {
+        Instance = this;
+        mapCamera = Camera.main;
+    }
 
     void Start()
     {
         GenerateMap();
         SpawnMapObjects(); // Спавнимо 3D об'єкти при старті гри
+    }
+
+    public void ReactivateMap()
+    {
+        if (mapCamera != null) mapCamera.gameObject.SetActive(true);
+        if (mapContainer != null) mapContainer.SetActive(true);
     }
 
     public void GenerateMap()
@@ -137,10 +153,13 @@ public class MapGenerator : MonoBehaviour
 
     private void SpawnMapObjects()
     {
-        foreach (var room in spawnedRooms)
-        {
-            if (room != null) Destroy(room.gameObject);
-        }
+        // Якщо контейнер уже є — знищуємо його разом з усім вмістом
+        if (mapContainer != null) Destroy(mapContainer);
+        
+        // Створюємо новий чистий контейнер
+        mapContainer = new GameObject("MapVisualContainer");
+        mapContainer.transform.SetParent(this.transform);
+
         spawnedRooms.Clear();
 
         foreach (var layer in mapLayers)
@@ -151,7 +170,9 @@ public class MapGenerator : MonoBehaviour
                 if (prefabToSpawn == null) continue;
 
                 Vector3 spawnPos = new Vector3(node.position.x, 0, node.position.y);
-                GameObject roomObj = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity, this.transform);
+                
+                // СПАВНИМО ВСЕ ВСЕРЕДИНУ КОНТЕЙНЕРА (mapContainer.transform)
+                GameObject roomObj = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity, mapContainer.transform);
                 
                 MapRoom mapRoom = roomObj.GetComponent<MapRoom>();
                 if (mapRoom == null) mapRoom = roomObj.AddComponent<MapRoom>();
@@ -193,7 +214,8 @@ public class MapGenerator : MonoBehaviour
             float distance = Vector3.Distance(startPos, endPos);
 
             // 3. Спавнимо куб безпосередньо у midPoint
-            GameObject lineObj = Instantiate(lineRendererPrefab, midPoint, Quaternion.identity, this.transform);
+            // Заміни в методі SpawnLinesForRoom рядок Instantiate на цей:
+            GameObject lineObj = Instantiate(lineRendererPrefab, midPoint, Quaternion.identity, mapContainer.transform);
             
             // 4. Повертаємо куб у бік наступної кімнати
             Vector3 direction = (endPos - startPos).normalized;
@@ -262,10 +284,12 @@ public class MapGenerator : MonoBehaviour
         {
             Debug.Log($"[MapGenerator] Завантаження сцени: {sceneToLoad}");
 
-            // Тимчасово вимикаємо головну камеру карти, щоб вона не рендерила під кубами карти сцену бою
+            // Ховаємо камеру
             if (Camera.main != null) Camera.main.gameObject.SetActive(false);
 
-            // Завантажуємо сцену аддитивно (накладаємо поверх карти)
+            // КРИТИЧНИЙ ФІКС: Повністю вимикаємо візуальну карту та її колайдери!
+            if (mapContainer != null) mapContainer.SetActive(false);
+
             SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Additive);
         }
     }
