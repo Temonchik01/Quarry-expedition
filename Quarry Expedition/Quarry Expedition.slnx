@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 ﻿<Solution>
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Tests.csproj" />
 </Solution>
+=======
+﻿<Solution>
+  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="ProjectAssembly.csproj" />
+  <Project Path="Tests.csproj" />
+</Solution>
+>>>>>>> Stashed changes

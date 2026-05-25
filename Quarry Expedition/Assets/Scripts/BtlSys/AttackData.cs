@@ -6,6 +6,7 @@ namespace BtlSys
     public class AttackData : ScriptableObject
     {
         public string attackName;
+        public string description;
         public int power;
         public int accuracy = 100;
         public int ammoCost;
@@ -15,6 +16,7 @@ namespace BtlSys
         public bool hasPriority;
         public int hits = 1;
         public string animationTrigger; // To be used with Animator
+        public string upgradeDescription; // Green part of description when upgraded
 
         [Header("Status Attack Modifier")]
         public bool isStatusAttack;

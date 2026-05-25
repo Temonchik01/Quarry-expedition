@@ -101,9 +101,6 @@ namespace BtlSys.UI
             actionPanel.SetActive(true);
             subActionPanel.SetActive(false);
 
-            // Position Action Panel in world space next to the hero
-            // Move it further to the right (3.5f) to avoid the screen-space HeroesInfo HUD
-            // and clearly forward (-1.0f) to prevent any clipping with world sprites
             Canvas canvas = actionPanel.GetComponentInParent<Canvas>();
             if (canvas != null && canvas.renderMode == RenderMode.WorldSpace)
             {

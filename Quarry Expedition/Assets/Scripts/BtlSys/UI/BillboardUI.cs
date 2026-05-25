@@ -16,9 +16,13 @@ namespace BtlSys.UI
             if (_mainCamera == null) _mainCamera = Camera.main;
             if (_mainCamera == null) return;
 
+<<<<<<< Updated upstream
             // Makes the UI always face the camera perfectly
             transform.LookAt(transform.position + _mainCamera.transform.rotation * Vector3.forward,
                              _mainCamera.transform.rotation * Vector3.up);
+=======
+            transform.rotation = Quaternion.LookRotation(transform.position - _mainCamera.transform.position, _mainCamera.transform.up);
+>>>>>>> Stashed changes
         }
     }
 }

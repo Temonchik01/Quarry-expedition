@@ -47,6 +47,33 @@ namespace BtlSys
             currentSpeed = data.speed;
         }
 
+<<<<<<< Updated upstream
+=======
+        public void LoadState(int hp, int ammo)
+        {
+            currentHP = hp;
+            currentAmmo = ammo;
+            onStatsChanged?.Invoke();
+            
+            if (currentHP <= 0)
+            {
+                SpriteRenderer spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+                if (spriteRenderer != null) spriteRenderer.color = Color.black;
+            }
+        }
+
+        public void ApplyPermanentBoosts(int hpB, int atkB, int defB, int ammoB, int spdB)
+        {
+            // Note: Initialize should have been called first
+            currentHP = Mathf.Min(currentHP, data.maxHealth + hpB);
+            currentAttack += atkB;
+            currentDefense += defB;
+            currentAmmo = Mathf.Min(currentAmmo, data.maxAmmo + ammoB);
+            currentSpeed += spdB;
+            onStatsChanged?.Invoke();
+        }
+
+>>>>>>> Stashed changes
         public void TakeDamage(int rawDamage)
         {
             int actualDamage = Mathf.Max(1, rawDamage - currentDefense);
