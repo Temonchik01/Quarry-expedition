@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace BtlSys
 {
@@ -16,5 +16,6 @@ namespace BtlSys
         public Sprite battleSprite;
 
         public List<AttackData> specials;
+        public AttackData basicAttack;
     }
 }

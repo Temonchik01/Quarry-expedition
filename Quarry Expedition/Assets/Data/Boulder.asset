@@ -22,3 +22,4 @@ MonoBehaviour:
   battleSprite: {fileID: 0}
   specials:
   - {fileID: 11400000, guid: 87ac039774f5c237eac0f6e7062ef032, type: 2}
+  basicAttack: {fileID: 11400000, guid: 87ac039774f5c237eac0f6e7062ef032, type: 2}

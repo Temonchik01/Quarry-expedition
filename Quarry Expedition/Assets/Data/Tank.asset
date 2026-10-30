@@ -23,3 +23,4 @@ MonoBehaviour:
   specials:
   - {fileID: 11400000, guid: 6aae3098d1748752aa1cf2f6ce78108e, type: 2}
   - {fileID: 11400000, guid: 29bb783231fe997a08496be0cc8afdee, type: 2}
+  basicAttack: {fileID: 11400000, guid: 6aae3098d1748752aa1cf2f6ce78108e, type: 2}

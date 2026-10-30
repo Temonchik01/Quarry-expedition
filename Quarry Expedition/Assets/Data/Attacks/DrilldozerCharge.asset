@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: DrilldozerCharge
   m_EditorClassIdentifier: Assembly-CSharp::BtlSys.AttackData
   attackName: Charge
-  power: 5
-  accuracy: 95
-  ammoCost: 10
+  power: 25
+  accuracy: 85
+  ammoCost: 5
   targetType: 0
   statusEffect: 0
   statusChance: 0
@@ -25,3 +25,6 @@ MonoBehaviour:
   isStatusAttack: 0
   modifiedStat: 0
   statModifierValue: 0
+  requiresCharge: 1
+  defensePercent: 50
+  targetAllies: 0

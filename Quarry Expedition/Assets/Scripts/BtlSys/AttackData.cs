@@ -6,19 +6,24 @@ namespace BtlSys
     public class AttackData : ScriptableObject
     {
         public string attackName;
-        public int power;
-        public int accuracy = 100;
-        public int ammoCost;
+        [Min(0)] public int power;
+        [Range(0, 100)] public int accuracy = 100;
+        [Min(0)] public int ammoCost;
         public TargetType targetType;
         public StatusEffectType statusEffect;
-        public float statusChance = 1.0f;
+        [Range(0f, 1f)] public float statusChance = 1f;
         public bool hasPriority;
-        public int hits = 1;
-        public string animationTrigger; // To be used with Animator
+        [Min(1)] public int hits = 1;
+        public string animationTrigger;
 
-        [Header("Status Attack Modifier")]
+        [Header("Status Skill")]
         public bool isStatusAttack;
         public StatType modifiedStat;
-        public int statModifierValue; // e.g., 40
+        public int statModifierValue;
+
+        [Header("Optional Rules")]
+        public bool targetAllies;
+        public bool requiresCharge;
+        [Range(0, 100)] public int defensePercent = 100;
     }
 }

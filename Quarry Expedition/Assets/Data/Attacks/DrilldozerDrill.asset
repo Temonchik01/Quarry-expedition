@@ -14,14 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BtlSys.AttackData
   attackName: Drill
   power: 5
-  accuracy: 50
-  ammoCost: 2
+  accuracy: 95
+  ammoCost: 7
   targetType: 0
   statusEffect: 0
   statusChance: 0
   hasPriority: 0
-  hits: 5
+  hits: 3
   animationTrigger: 
   isStatusAttack: 0
   modifiedStat: 0
   statModifierValue: 0
+  targetAllies: 0
+  requiresCharge: 0
+  defensePercent: 100

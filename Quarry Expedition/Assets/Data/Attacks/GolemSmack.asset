@@ -25,3 +25,6 @@ MonoBehaviour:
   isStatusAttack: 1
   modifiedStat: 1
   statModifierValue: 0
+  targetAllies: 0
+  requiresCharge: 0
+  defensePercent: 100
