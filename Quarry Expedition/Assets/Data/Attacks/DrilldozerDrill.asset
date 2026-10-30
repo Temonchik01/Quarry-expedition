@@ -26,5 +26,6 @@ MonoBehaviour:
   modifiedStat: 0
   statModifierValue: 0
   targetAllies: 0
+  description: Attempts three hits against one enemy. Each hit checks accuracy separately.
   requiresCharge: 0
   defensePercent: 100

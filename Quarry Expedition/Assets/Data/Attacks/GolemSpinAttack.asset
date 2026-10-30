@@ -26,5 +26,6 @@ MonoBehaviour:
   modifiedStat: 0
   statModifierValue: 0
   targetAllies: 0
+  description: Attempts five hits against one enemy.
   requiresCharge: 0
   defensePercent: 100

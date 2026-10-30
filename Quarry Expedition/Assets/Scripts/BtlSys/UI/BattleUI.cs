@@ -1,7 +1,7 @@
-using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace BtlSys.UI
 {
@@ -24,6 +24,8 @@ namespace BtlSys.UI
         [Header("Sub-Panel Buttons Container")]
         public Transform subButtonContainer;
         public GameObject subButtonPrefab;
+        public SpecialAttackDetailsUI specialDetails;
+        [SerializeField, Range(0, 4)] private int visibleSpecialSlots = 4;
 
         [Header("End Battle UI")]
         public GameObject endBattlePanel;
@@ -129,6 +131,8 @@ namespace BtlSys.UI
             if (TooltipUI.Instance != null) TooltipUI.Instance.Hide();
             if (SelectionCursorUI.Instance != null) SelectionCursorUI.Instance.SetTarget(null);
             isTargeting = false;
+            pendingAttack = null;
+            if (specialDetails != null) specialDetails.Clear();
         }
 
         private void SelectBasicAttack()
@@ -146,33 +150,88 @@ namespace BtlSys.UI
         private void ShowSpecials()
         {
             if (currentHero == null || currentHero.data == null || subButtonContainer == null || subButtonPrefab == null) return;
+            actionPanel.SetActive(false);
             subActionPanel.SetActive(true);
-            foreach (Transform child in subButtonContainer)
-                if (backButton == null || child.gameObject != backButton.gameObject) Destroy(child.gameObject);
+            if (specialDetails != null) specialDetails.Clear();
 
-            if (currentHero.data.specials == null) return;
-            foreach (AttackData attack in currentHero.data.specials)
+            foreach (Transform child in subButtonContainer)
             {
-                if (attack == null || attack == currentHero.data.basicAttack) continue;
-                AttackData selected = attack;
-                GameObject buttonObject = Instantiate(subButtonPrefab, subButtonContainer);
-                TextMeshProUGUI label = buttonObject.GetComponentInChildren<TextMeshProUGUI>();
-                if (label != null) label.text = $"{selected.attackName} ({selected.ammoCost})";
-                UnityEngine.UI.Button button = buttonObject.GetComponent<UnityEngine.UI.Button>();
-                if (button != null)
-                {
-                    button.interactable = currentHero.CanUse(selected);
-                    button.onClick.AddListener(() => SelectOrTarget(selected));
-                }
-                UIHoverHandler hover = buttonObject.GetComponent<UIHoverHandler>();
-                if (hover == null) hover = buttonObject.AddComponent<UIHoverHandler>();
-                hover.tooltipContent = selected.attackName;
+                if (backButton == null || child.gameObject != backButton.gameObject)
+                    Destroy(child.gameObject);
             }
+
+            AttackData firstAttack = null;
+            GameObject firstButton = null;
+            int skillCount = 0;
+            if (currentHero.data.specials != null)
+            {
+                foreach (AttackData attack in currentHero.data.specials)
+                {
+                    if (attack == null || attack == currentHero.data.basicAttack) continue;
+                    GameObject button = CreateSpecialSlot(attack);
+                    if (firstAttack == null)
+                    {
+                        firstAttack = attack;
+                        firstButton = button;
+                    }
+                    skillCount++;
+                }
+            }
+
+            for (int slot = skillCount; slot < visibleSpecialSlots; slot++)
+                CreateSpecialSlot(null);
+
+            if (specialDetails != null) specialDetails.Show(firstAttack);
+            if (EventSystem.current != null)
+            {
+                UnityEngine.UI.Button firstChoice = firstButton != null
+                    ? firstButton.GetComponent<UnityEngine.UI.Button>() : null;
+                EventSystem.current.SetSelectedGameObject(firstChoice != null && firstChoice.interactable
+                    ? firstButton : backButton.gameObject);
+            }
+        }
+
+        private GameObject CreateSpecialSlot(AttackData attack)
+        {
+            GameObject buttonObject = Instantiate(subButtonPrefab, subButtonContainer);
+            buttonObject.name = attack != null ? $"{attack.attackName}Button" : "EmptySpecialSlot";
+            RectTransform rect = buttonObject.GetComponent<RectTransform>();
+            if (rect != null) rect.localScale = Vector3.one;
+            UnityEngine.UI.LayoutElement layout = buttonObject.GetComponent<UnityEngine.UI.LayoutElement>();
+            if (layout == null) layout = buttonObject.AddComponent<UnityEngine.UI.LayoutElement>();
+            layout.preferredHeight = 30f;
+            layout.minHeight = 30f;
+
+            TextMeshProUGUI label = buttonObject.GetComponentInChildren<TextMeshProUGUI>();
+            if (label != null)
+            {
+                label.text = attack == null ? string.Empty : $"{attack.attackName}   {attack.ammoCost} AM";
+                label.alignment = TextAlignmentOptions.Left;
+                label.fontSize = 16;
+            }
+
+            UnityEngine.UI.Button button = buttonObject.GetComponent<UnityEngine.UI.Button>();
+            if (button != null)
+            {
+                button.interactable = attack != null && currentHero.CanUse(attack);
+                if (attack != null) button.onClick.AddListener(() => SelectOrTarget(attack));
+            }
+            if (attack != null && specialDetails != null)
+            {
+                SpecialAttackButtonUI focus = buttonObject.AddComponent<SpecialAttackButtonUI>();
+                focus.Bind(attack, specialDetails.Show);
+            }
+            return buttonObject;
         }
 
         private void HideSubMenu()
         {
-            if (subActionPanel != null) subActionPanel.SetActive(false);
+            subActionPanel.SetActive(false);
+            if (specialDetails != null) specialDetails.Clear();
+            if (currentHero != null && battle.currentState == BattleState.PlayerInput)
+                actionPanel.SetActive(true);
+            if (EventSystem.current != null && specialsButton != null)
+                EventSystem.current.SetSelectedGameObject(specialsButton.gameObject);
         }
 
         private void SelectOrTarget(AttackData attack)

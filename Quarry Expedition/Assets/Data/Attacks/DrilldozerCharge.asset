@@ -25,6 +25,7 @@ MonoBehaviour:
   isStatusAttack: 0
   modifiedStat: 0
   statModifierValue: 0
+  targetAllies: 0
+  description: Charges now, then strikes next turn using half of the target's Defense.
   requiresCharge: 1
   defensePercent: 50
-  targetAllies: 0

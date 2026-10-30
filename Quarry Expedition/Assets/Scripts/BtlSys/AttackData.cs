@@ -23,6 +23,7 @@ namespace BtlSys
 
         [Header("Optional Rules")]
         public bool targetAllies;
+        [TextArea(2, 4)] public string description;
         public bool requiresCharge;
         [Range(0, 100)] public int defensePercent = 100;
     }

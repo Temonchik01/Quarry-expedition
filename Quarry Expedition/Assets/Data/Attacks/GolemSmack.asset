@@ -26,5 +26,6 @@ MonoBehaviour:
   modifiedStat: 1
   statModifierValue: 0
   targetAllies: 0
+  description: Attempts to paralyze one enemy.
   requiresCharge: 0
   defensePercent: 100

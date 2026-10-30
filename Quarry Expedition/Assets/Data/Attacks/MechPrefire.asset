@@ -26,5 +26,6 @@ MonoBehaviour:
   modifiedStat: 0
   statModifierValue: 0
   targetAllies: 0
+  description: Strikes one enemy before normal attacks.
   requiresCharge: 0
   defensePercent: 100

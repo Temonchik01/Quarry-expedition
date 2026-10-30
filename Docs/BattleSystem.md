@@ -14,6 +14,8 @@
 | `BattleManager` | Keep on the existing Battle scene object | Phases, team discovery, queued actions, victory and defeat events |
 | `Combatant` | Keep on each Battle scene fighter; set `data` and `isPlayer` | HP, ammo, temporary stats, one status, change events |
 | `BattleUI` | Keep on the existing Canvas; use Inspector references and set victory/defeat text | Player choices and presentation |
+| `SpecialAttackDetailsUI` | Already wired on the special details panel in `Battle.unity` | TextMeshPro attack summary from `AttackData` |
+| `SpecialAttackButtonUI` | Added to skill buttons by `BattleUI` at runtime | Updates details on hover or keyboard selection |
 | `CharacterData` / `AttackData` | Create and edit assets in the Project window | Character and attack configuration |
 | `BattleAction`, `BattleTurnOrder`, `EnemyActionPlanner`, `BattleActionResolver` | No component or Inspector setup | Choices, turn order, enemy AI, and action effects |
 
@@ -28,3 +30,7 @@ Charge spends ammo when selected, waits one round, then strikes with 50% of the 
 ## Validation
 
 Run **Tools > Quarry Expedition > Validate Battle System** in the Unity Editor. It checks basic damage, status replacement and expiry, temporary stat expiry, priority, and Charge. The Battle scene still needs a manual Play Mode pass for UI interaction and map transitions.
+
+## Battle UI layout
+
+`Battle.unity` keeps the three hero cards at the top-left of the screen Canvas. The special attack menu is a bottom-centered, screen-space panel with a button list on the left and attack details on the right. `BattleUI` creates up to four visible special slots, fills them from the character's `AttackData` assets, and updates `SpecialAttackDetailsUI` when a skill is hovered or selected. Attack descriptions are edited on the `AttackData` assets. No additional scene wiring is required.
