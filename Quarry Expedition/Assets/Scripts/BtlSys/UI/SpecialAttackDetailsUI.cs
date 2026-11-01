@@ -55,12 +55,6 @@ namespace BtlSys.UI
                 if (currentUpgrade != null && !string.IsNullOrWhiteSpace(currentUpgrade.description))
                     lines.Append("\n<color=#25D65A>+ ").Append(currentUpgrade.description).Append("</color>");
             }
-            if (level < attack.MaximumUpgradeLevel)
-            {
-                AttackUpgradeData nextUpgrade = attack.GetUpgrade(level);
-                if (nextUpgrade != null && !string.IsNullOrWhiteSpace(nextUpgrade.description))
-                    lines.Append("\nNext: ").Append(nextUpgrade.description);
-            }
             return lines.ToString();
         }
 
