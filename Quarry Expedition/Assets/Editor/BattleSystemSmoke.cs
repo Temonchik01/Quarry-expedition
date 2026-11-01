@@ -17,6 +17,7 @@ namespace BtlSys.Editor
             AttackData priority = ScriptableObject.CreateInstance<AttackData>();
             GameObject heroObject = new GameObject("Battle Smoke Hero");
             GameObject enemyObject = new GameObject("Battle Smoke Enemy");
+            SpriteRenderer enemySprite = enemyObject.AddComponent<SpriteRenderer>();
 
             try
             {
@@ -49,6 +50,7 @@ namespace BtlSys.Editor
 
                 Check(enemy.ApplyStatusEffect(StatusEffectType.Corrosion), "first status applies");
                 Check(enemy.currentDefense == 0, "status penalty is clamped at zero");
+                Check(enemySprite.color.g > enemySprite.color.r, "corrosion tints the unit green: " + enemySprite.color);
                 Check(!enemy.ApplyStatusEffect(StatusEffectType.Ignite), "different status cannot replace it");
                 enemy.CompleteTurn();
                 Check(enemy.statusEffects[0].remainingTurns == 2, "status ticks after a turn");
@@ -58,6 +60,14 @@ namespace BtlSys.Editor
                 enemy.CompleteTurn();
                 enemy.CompleteTurn();
                 Check(enemy.statusEffects.Count == 0 && enemy.currentDefense == 20, "status expires cleanly");
+                Check(enemySprite.color == Color.white, "expired status restores the original color");
+                Check(enemy.ApplyStatusEffect(StatusEffectType.Ignite), "ignite applies");
+                Check(enemySprite.color.r > enemySprite.color.g, "ignite tints the unit red");
+                enemy.CompleteTurn(); enemy.CompleteTurn(); enemy.CompleteTurn();
+                Check(enemy.ApplyStatusEffect(StatusEffectType.Paralysis), "paralysis applies");
+                Check(enemySprite.color.r > enemySprite.color.b && enemySprite.color.g > enemySprite.color.b,
+                    "paralysis tints the unit yellow");
+                enemy.CompleteTurn(); enemy.CompleteTurn(); enemy.CompleteTurn();
 
                 hero.ModifyStat(StatType.Speed, 40);
                 Check(hero.currentSpeed == 50, "temporary modifier applies");
@@ -90,6 +100,11 @@ namespace BtlSys.Editor
                     "charge pays ammo and waits");
                 resolver.Resolve(queued, team, opponents, _ => { });
                 Check(enemy.currentHP == 40, "charged hit uses half defense");
+
+                AttackData reload = AssetDatabase.LoadAssetAtPath<AttackData>("Assets/Data/Attacks/All_Reload.asset");
+                Check(reload != null && reload.ammoRestore == 15, "catalog reload asset is configured");
+                resolver.Resolve(BattleAction.UseAttack(hero, reload, hero), team, opponents, _ => { });
+                Check(hero.currentAmmo == 20, "catalog reload restores ammo without damaging the user");
 
                 Debug.Log("[BattleSystemSmoke] Battle rules passed.");
             }

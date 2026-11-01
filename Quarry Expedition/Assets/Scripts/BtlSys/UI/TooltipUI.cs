@@ -12,10 +12,44 @@ namespace BtlSys.UI
         public RectTransform panelRect;
         public Vector2 offset = new Vector2(0, 0.35f);
 
+        private Vector3 defaultPanelPosition;
+
         private void Awake()
         {
             Instance = this;
+            defaultPanelPosition = panelRect.anchoredPosition3D;
             gameObject.SetActive(false);
+        }
+
+        public void ShowAction(BattleAction action)
+        {
+            if (action == null || action.User == null || tooltipText == null || panelRect == null) return;
+
+            string actorName = action.User.data != null && !string.IsNullOrWhiteSpace(action.User.data.characterName)
+                ? action.User.data.characterName
+                : action.User.name;
+            string actionName = ActionName(action);
+
+            tooltipText.text = $"{actorName}\n{actionName}";
+            panelRect.anchoredPosition3D = defaultPanelPosition;
+            gameObject.SetActive(true);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(panelRect);
+        }
+
+        private static string ActionName(BattleAction action)
+        {
+            switch (action.Type)
+            {
+                case BattleActionType.Attack:
+                    AttackData attack = action.Attack ?? action.User.data?.basicAttack;
+                    return attack != null ? attack.attackName : "Attack";
+                case BattleActionType.Reload:
+                    return "Reload";
+                case BattleActionType.Defend:
+                    return "Defend";
+                default:
+                    return action.Type.ToString();
+            }
         }
 
         public void Show(string text, Vector3 position)

@@ -35,7 +35,7 @@ TextureImporter:
   textureSettings:
     serializedVersion: 2
     filterMode: 0
-    aniso: 1
+    aniso: 0
     mipBias: 0
     wrapU: 1
     wrapV: 1
@@ -72,7 +72,7 @@ TextureImporter:
     maxTextureSize: 16384
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 2
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -85,7 +85,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -97,199 +97,309 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ActionPanel
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 106
-        width: 67
-        height: 58
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 1148839912d15b942a1188ad3d79036a
-      internalID: 630360261
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ToolTip
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 93
-        width: 95
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: d1425ff1f961f5342bf644a9b6df67bf
-      internalID: -366291577
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: MenuCursor
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 83
-        width: 3
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 71a48affadbad01479db88a3efead1bb
-      internalID: 1457492316
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BattleCursor
-      rect:
-        serializedVersion: 2
-        x: 29
-        y: 73
-        width: 8
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 50bcbe278acdb384b83ccd6ce0c92b02
-      internalID: 1499877576
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ButtonLayout
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 63
-        width: 59
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 8503a3a41e1a95646820cf88b7758668
-      internalID: -813168356
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: Info
       rect:
         serializedVersion: 2
-        x: 0
-        y: 25
+        x: 675
+        y: 465
         width: 101
         height: 38
       alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 1, y: 1, z: 1, w: 1}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1a3a166d9dd504148a981160d6278e63
+      spriteID: a2ad6920bb5a94ba6b8f9fef4535d042
       internalID: 1563632817
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HPBar
+      name: ButtonInverse
       rect:
         serializedVersion: 2
-        x: 5
-        y: 17
-        width: 92
-        height: 2
+        x: 854
+        y: 477
+        width: 57
+        height: 9
       alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 2, y: 2, z: 2, w: 2}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ad7701a320de0e2458e7be3cfa01882a
-      internalID: -127266434
+      spriteID: 57a9ef09ca19c767d9fe57744538ca90
+      internalID: -1326115456
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CliderCorner
+      name: PanelUI
       rect:
         serializedVersion: 2
-        x: 4
-        y: 12
+        x: 914
+        y: 345
+        width: 194
+        height: 152
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 1, y: 1, z: 1, w: 1}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 62d95ed67c0968ffda5836716b218ba7
+      internalID: 936636270
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Info_border
+      rect:
+        serializedVersion: 2
+        x: 679
+        y: 452
         width: 94
         height: 4
       alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 1, y: 1, z: 1, w: 1}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 150227f410de6c14aa227d637e4fd44e
-      internalID: 1673062249
+      spriteID: a6cb5fb3b731e30fcbaaf7bf7ca38e14
+      internalID: 284126306
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: AmmoBar
+      name: PlusUpgradeInverse
       rect:
         serializedVersion: 2
-        x: 5
-        y: 5
-        width: 92
-        height: 2
+        x: 852
+        y: 453
+        width: 8
+        height: 8
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e5523ac185f418648a4ba0f348d4f82d
-      internalID: -2113326510
+      spriteID: c78c867d12cbdc7dea6c1e1d7d0efd1d
+      internalID: 1946439980
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Button
+      rect:
+        serializedVersion: 2
+        x: 853
+        y: 464
+        width: 59
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 3, y: 3, z: 3, w: 3}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8b9f560412963faf7a01cf527d59b0b0
+      internalID: -1192451891
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CursorBattle
+      rect:
+        serializedVersion: 2
+        x: 871
+        y: 453
+        width: 8
+        height: 8
+      alignment: 9
+      pivot: {x: 1, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7350cc46ee2d715038189a0cc611b579
+      internalID: 727478422
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Info_ammo
+      rect:
+        serializedVersion: 2
+        x: 680
+        y: 445
+        width: 92
+        height: 2
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d0b5ab3963b61882cb258a4a4b7e73be
+      internalID: -215669033
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: StatsSlider
+      rect:
+        serializedVersion: 2
+        x: 775
+        y: 444
+        width: 75
+        height: 6
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ceba41aa34dbfe980b7203f65e76e6b3
+      internalID: -1184828734
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: PlusUpgrade
+      rect:
+        serializedVersion: 2
+        x: 852
+        y: 443
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fa0ea243cc64bd0c086fa3e2dede3266
+      internalID: -1938003990
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewAttack
+      rect:
+        serializedVersion: 2
+        x: 862
+        y: 444
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e165f65095d989f1c96efe6e9633adf9
+      internalID: 2051717610
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ActionPanel
+      rect:
+        serializedVersion: 2
+        x: 703
+        y: 347
+        width: 67
+        height: 58
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a295a70e92263db398ab392a9c49c9ce
+      internalID: 630360261
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CursorSelection
+      rect:
+        serializedVersion: 2
+        x: 884
+        y: 453
+        width: 3
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a1192d878fc84a46e8eb1899e6387d57
+      internalID: -431645358
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Info_hp
+      rect:
+        serializedVersion: 2
+        x: 680
+        y: 457
+        width: 92
+        height: 2
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c6626bc15a4d7192f85af294ee67e9f3
+      internalID: -2083909268
       vertices: []
       indices: 
       edges: []
@@ -306,17 +416,26 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceOnImport
+        value: False
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       ActionPanel: 630360261
-      AmmoBar: -2113326510
-      BattleCursor: 1499877576
-      ButtonLayout: -813168356
-      CliderCorner: 1673062249
-      HPBar: -127266434
+      Button: -1192451891
+      ButtonInverse: -1326115456
+      CursorBattle: 727478422
+      CursorSelection: -431645358
       Info: 1563632817
-      MenuCursor: 1457492316
-      ToolTip: -366291577
+      Info_ammo: -215669033
+      Info_border: 284126306
+      Info_hp: -2083909268
+      NewAttack: 2051717610
+      PanelUI: 936636270
+      PlusUpgrade: -1938003990
+      PlusUpgradeInverse: 1946439980
+      StatsSlider: -1184828734
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

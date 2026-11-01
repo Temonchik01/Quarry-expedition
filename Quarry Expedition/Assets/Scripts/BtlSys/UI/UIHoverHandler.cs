@@ -9,14 +9,18 @@ namespace BtlSys.UI
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            TooltipUI.Instance.Show(tooltipContent, transform.position);
-            SelectionCursorUI.Instance.SetTarget(transform, true);
+            Canvas canvas = GetComponentInParent<Canvas>();
+            if (canvas != null && canvas.renderMode != RenderMode.WorldSpace) return;
+            if (TooltipUI.Instance != null) TooltipUI.Instance.Show(tooltipContent, transform.position);
+            if (SelectionCursorUI.Instance != null) SelectionCursorUI.Instance.SetTarget(transform, true);
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            TooltipUI.Instance.Hide();
-            SelectionCursorUI.Instance.SetTarget(null);
+            Canvas canvas = GetComponentInParent<Canvas>();
+            if (canvas != null && canvas.renderMode != RenderMode.WorldSpace) return;
+            if (TooltipUI.Instance != null) TooltipUI.Instance.Hide();
+            if (SelectionCursorUI.Instance != null) SelectionCursorUI.Instance.SetTarget(null);
         }
     }
 }

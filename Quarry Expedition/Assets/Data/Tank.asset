@@ -21,6 +21,9 @@ MonoBehaviour:
   portrait: {fileID: 0}
   battleSprite: {fileID: 0}
   specials:
-  - {fileID: 11400000, guid: 6aae3098d1748752aa1cf2f6ce78108e, type: 2}
   - {fileID: 11400000, guid: 29bb783231fe997a08496be0cc8afdee, type: 2}
+  - {fileID: 11400000, guid: ff5eec7a28004591a3f0b6bbb32c8cbc, type: 2}
+  - {fileID: 11400000, guid: 99a3f5634b174f8487cf19892a96fe08, type: 2}
+  - {fileID: 11400000, guid: b90d330da47440a7b6c685d5932e3669, type: 2}
+  - {fileID: 11400000, guid: cfa9ec3ca283449585fc248f5dc5e7a0, type: 2}
   basicAttack: {fileID: 11400000, guid: 6aae3098d1748752aa1cf2f6ce78108e, type: 2}

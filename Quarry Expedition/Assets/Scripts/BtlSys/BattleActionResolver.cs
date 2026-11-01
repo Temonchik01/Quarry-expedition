@@ -51,7 +51,8 @@ namespace BtlSys
                 return;
             }
 
-            if (!action.IsCharged && !user.TrySpendAmmo(Mathf.Max(0, attack.ammoCost)))
+            AttackRuntimeStats stats = attack.GetRuntimeStats(action.UpgradeLevel);
+            if (!action.IsCharged && !user.TrySpendAmmo(stats.AmmoCost))
             {
                 Debug.LogWarning($"[Battle] {user.name} cannot afford {attack.attackName}.");
                 return;
@@ -73,13 +74,13 @@ namespace BtlSys
             IReadOnlyList<Combatant> allies = user.isPlayer ? playerTeam : enemyTeam;
             IReadOnlyList<Combatant> opponents = user.isPlayer ? enemyTeam : playerTeam;
             var targets = new List<Combatant>();
-            if (attack.targetType == TargetType.Self)
+            if (stats.TargetType == TargetType.Self)
             {
                 targets.Add(user);
             }
-            else if (attack.targetType == TargetType.EntireParty)
+            else if (stats.TargetType == TargetType.EntireParty)
             {
-                IReadOnlyList<Combatant> party = attack.targetAllies ? allies : opponents;
+                IReadOnlyList<Combatant> party = stats.TargetAllies ? allies : opponents;
                 foreach (Combatant member in party)
                 {
                     if (member != null && member.IsAlive) targets.Add(member);
@@ -88,7 +89,7 @@ namespace BtlSys
             else
             {
                 Combatant target = action.Target;
-                IReadOnlyList<Combatant> party = attack.targetAllies ? allies : opponents;
+                IReadOnlyList<Combatant> party = stats.TargetAllies ? allies : opponents;
                 if (target == null || !target.IsAlive || !Contains(party, target))
                 {
                     target = FirstLiving(party);
@@ -99,13 +100,14 @@ namespace BtlSys
             foreach (Combatant target in targets)
             {
                 bool landed = false;
-                for (int hit = 0; hit < Mathf.Max(1, attack.hits) && target.IsAlive; hit++)
+                for (int hit = 0; hit < stats.Hits && target.IsAlive; hit++)
                 {
                     if (UnityEngine.Random.Range(0, 100) >= Mathf.Clamp(attack.accuracy, 0, 100)) continue;
                     landed = true;
-                    if (!attack.isStatusAttack)
+                    if (stats.AmmoRestore > 0) target.ReplenishAmmo(stats.AmmoRestore);
+                    if (!attack.isStatusAttack && stats.AmmoRestore == 0)
                     {
-                        target.TakeDamage(user.currentAttack + attack.power, attack.defensePercent);
+                        target.TakeDamage(user.currentAttack + stats.Power, attack.defensePercent);
                     }
                 }
 
@@ -118,6 +120,13 @@ namespace BtlSys
                     UnityEngine.Random.value < Mathf.Clamp01(attack.statusChance))
                 {
                     target.ApplyStatusEffect(attack.statusEffect);
+                }
+                for (int level = 0; level < action.UpgradeLevel; level++)
+                {
+                    AttackUpgradeData upgrade = attack.GetUpgrade(level);
+                    if (upgrade != null && upgrade.bonusStatusEffect != StatusEffectType.None &&
+                        UnityEngine.Random.value < Mathf.Clamp01(upgrade.bonusStatusChance))
+                        target.ApplyStatusEffect(upgrade.bonusStatusEffect);
                 }
             }
             Debug.Log($"[Battle] {user.name} used {attack.attackName}.");

@@ -23,4 +23,8 @@ MonoBehaviour:
   specials:
   - {fileID: 11400000, guid: 39449b7f44a7c9ecf8d4871ef88b0a8c, type: 2}
   - {fileID: 11400000, guid: 2f68d15708f10d054aac79b3c40380df, type: 2}
+  - {fileID: 11400000, guid: 3b62f99126454ac6a6c8732899a1a566, type: 2}
+  - {fileID: 11400000, guid: 99a3f5634b174f8487cf19892a96fe08, type: 2}
+  - {fileID: 11400000, guid: b90d330da47440a7b6c685d5932e3669, type: 2}
+  - {fileID: 11400000, guid: cfa9ec3ca283449585fc248f5dc5e7a0, type: 2}
   basicAttack: {fileID: 11400000, guid: 1976e7af033046b79d3c8ff873cb3c26, type: 2}

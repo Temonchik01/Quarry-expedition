@@ -10,22 +10,34 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 128918625da28ff4c8f6bd5c5e961195, type: 3}
-  m_Name: DrilldozerCharge
+  m_Name: All_Corrode
   m_EditorClassIdentifier: Assembly-CSharp::BtlSys.AttackData
-  attackName: Charge
-  power: 25
-  accuracy: 85
+  attackName: Corrode
+  power: 0
+  accuracy: 50
   ammoCost: 5
   targetType: 0
-  statusEffect: 0
-  statusChance: 0
+  statusEffect: 3
+  statusChance: 1
   hasPriority: 0
   hits: 1
-  animationTrigger: 
-  isStatusAttack: 0
+  isStatusAttack: 1
   modifiedStat: 0
   statModifierValue: 0
   targetAllies: 0
-  description: Charges now, then strikes next turn using half of the target's Defense.
-  requiresCharge: 1
-  defensePercent: 50
+  description: Attempts to corrode one enemy.
+  requiresCharge: 0
+  defensePercent: 100
+  ammoRestore: 0
+  upgrades:
+  - description: "Targets all enemies; +5 ammo cost."
+    upgradePointCost: 1
+    powerBonus: 0
+    ammoCostDelta: 5
+    extraHits: 0
+    overridesTargetType: 1
+    targetType: 1
+    overridesTargetAllies: 1
+    targetAllies: 0
+    bonusStatusEffect: 0
+    bonusStatusChance: 0

@@ -33,4 +33,12 @@ Run **Tools > Quarry Expedition > Validate Battle System** in the Unity Editor. 
 
 ## Battle UI layout
 
-`Battle.unity` keeps the three hero cards at the top-left of the screen Canvas. The special attack menu is a bottom-centered, screen-space panel with a button list on the left and attack details on the right. `BattleUI` creates up to four visible special slots, fills them from the character's `AttackData` assets, and updates `SpecialAttackDetailsUI` when a skill is hovered or selected. Attack descriptions are edited on the `AttackData` assets. No additional scene wiring is required.
+`Battle.unity` keeps the three hero cards at the top-left of the screen Canvas. The special attack menu is a bottom-centered, screen-space panel with a button list on the left and attack details on the right. `BattleUI` fills a clipped, scrollable special list from the character's `AttackData` assets. The details panel appears only while an attack is hovered or selected. Attack descriptions are edited on the `AttackData` assets. `SelectionCursor` keeps the menu cursor for buttons and switches to `BattleCursor` when an enemy is targeted. The world-space action menu offset is adjustable on `BattleUI`. No additional scene wiring is required.
+
+## Attack catalog
+
+The 17 `AttackData` assets in `Assets/Data/Attacks` match the starting values in the Obsidian `Catalog/Attacks.md`. Asset names use `Character_Attack` or `All_Attack`. Existing attack GUIDs were retained where the attack still exists. Golem's old Shock and Spin Attack assets were removed because they are absent from the catalog. All characters can use the shared Zap, Ignite, and Corrode skills. The existing Reload button uses the dedicated Reload action and restores 15 ammo; `All_Reload` is catalog data for future skill use. Catalog upgrade tiers are defined on each `AttackData` asset and applied per equipped copy through `ProgressionManager`; see `Docs/SkillProgression.md`. `Magician_ArcFist` is ready for a future Magician character asset.
+
+## Menu focus and upgrades
+
+`SpecialMenuCursor` is a screen-space cursor for the special attack list and Back button. The world-space `SelectionCursor` remains for the main action menu and target selection. Reopening Specials clears old buttons from the layout before rebuilding the list, then resets the scroll position to the top. The main ActionPanel is positioned at the camera viewport center; `BattleUI.actionCanvasDistance` adjusts its apparent size. The active hero card uses `HeroInfo.activeCardColor` so the first turn is visible immediately. Set `AttackData.upgradeLevel` to 1 or 2 to display a green `+` or `++` after the skill name; this marker does not apply upgrade mechanics.

@@ -14,11 +14,13 @@ namespace BtlSys
         public List<Combatant> enemyTeam = new List<Combatant>();
         public BattleState currentState = BattleState.Initializing;
 
-        [SerializeField, Min(0f)] private float actionDelay = 0.5f;
+        [SerializeField, Min(0f)] private float actionDelay = 2f;
 
         public Combatant CurrentHero { get; private set; }
         public event Action<Combatant> onHeroTurnStarted;
         public event Action onRoundExecutionStarted;
+        public event Action<BattleAction> onActionStarted;
+        public event Action onActionFinished;
         public event Action<bool> onBattleEnded;
 
         private readonly List<BattleAction> roundActions = new List<BattleAction>();
@@ -72,7 +74,10 @@ namespace BtlSys
             }
 
             if (ProgressionManager.Instance != null)
+            {
                 ProgressionManager.Instance.LoadPlayerState(playerTeam);
+                ProgressionManager.Instance.InitializeSkillLoadouts(playerTeam);
+            }
 
             Debug.Log($"[Battle] Started with {playerTeam.Count} heroes and {enemyTeam.Count} enemies.");
             if (playerTeam.Count == 0 || enemyTeam.Count == 0)
@@ -92,13 +97,18 @@ namespace BtlSys
             if (action.Type == BattleActionType.Attack)
             {
                 AttackData attack = action.Attack != null ? action.Attack : CurrentHero.data?.basicAttack;
-                if (attack == null || !CurrentHero.CanUse(attack)) return false;
-                if (attack != CurrentHero.data.basicAttack &&
-                    (CurrentHero.data.specials == null || !CurrentHero.data.specials.Contains(attack))) return false;
+                if (attack == null || !CurrentHero.CanUse(attack, action.UpgradeLevel)) return false;
+                ProgressionManager progression = ProgressionManager.Instance;
+                bool isEquipped = progression != null
+                    ? progression.IsEquipped(CurrentHero.data, attack, action.UpgradeLevel)
+                    : action.UpgradeLevel == 0 && (attack == CurrentHero.data.basicAttack ||
+                      (CurrentHero.data.specials != null && CurrentHero.data.specials.Contains(attack)));
+                if (!isEquipped) return false;
 
-                if (attack.targetType == TargetType.SingleTarget)
+                AttackRuntimeStats stats = attack.GetRuntimeStats(action.UpgradeLevel);
+                if (stats.TargetType == TargetType.SingleTarget)
                 {
-                    IReadOnlyList<Combatant> party = attack.targetAllies ? playerTeam : enemyTeam;
+                    IReadOnlyList<Combatant> party = stats.TargetAllies ? playerTeam : enemyTeam;
                     if (action.Target == null || !action.Target.IsAlive || !Contains(party, action.Target)) return false;
                 }
             }
@@ -179,9 +189,11 @@ namespace BtlSys
             foreach (BattleAction action in roundActions)
             {
                 if (!(phase is ResolveActionsPhase) || CheckBattleEnd()) yield break;
+                onActionStarted?.Invoke(action);
                 resolver.Resolve(action, playerTeam, enemyTeam, QueueCharge);
-                if (!(phase is ResolveActionsPhase) || CheckBattleEnd()) yield break;
                 if (actionDelay > 0f) yield return new WaitForSeconds(actionDelay);
+                onActionFinished?.Invoke();
+                if (!(phase is ResolveActionsPhase) || CheckBattleEnd()) yield break;
             }
             roundRoutine = null;
             if (!CheckBattleEnd()) ChangePhase(new CollectActionsPhase(this));
@@ -200,7 +212,8 @@ namespace BtlSys
 
         private void HandleCombatantDeath()
         {
-            CheckBattleEnd();
+            // ResolveRound checks for battle completion after the current action's display beat.
+            if (!(phase is ResolveActionsPhase)) CheckBattleEnd();
         }
 
         private bool CheckBattleEnd()

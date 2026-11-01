@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 128918625da28ff4c8f6bd5c5e961195, type: 3}
-  m_Name: DrilldozerRam
+  m_Name: Drilldozer_Ram
   m_EditorClassIdentifier: Assembly-CSharp::BtlSys.AttackData
   attackName: Ram
   power: 5
@@ -28,3 +28,28 @@ MonoBehaviour:
   targetAllies: 0
   requiresCharge: 0
   defensePercent: 100
+  description: Hits one enemy once.
+  ammoRestore: 0
+  upgrades:
+  - description: "+5 damage."
+    upgradePointCost: 1
+    powerBonus: 5
+    ammoCostDelta: 0
+    extraHits: 0
+    overridesTargetType: 0
+    targetType: 0
+    overridesTargetAllies: 0
+    targetAllies: 0
+    bonusStatusEffect: 0
+    bonusStatusChance: 0
+  - description: "10% chance to paralyze the target."
+    upgradePointCost: 1
+    powerBonus: 0
+    ammoCostDelta: 0
+    extraHits: 0
+    overridesTargetType: 0
+    targetType: 0
+    overridesTargetAllies: 0
+    targetAllies: 0
+    bonusStatusEffect: 2
+    bonusStatusChance: 0.1

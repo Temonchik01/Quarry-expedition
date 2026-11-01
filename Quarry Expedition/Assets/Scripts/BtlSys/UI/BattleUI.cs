@@ -25,7 +25,9 @@ namespace BtlSys.UI
         public Transform subButtonContainer;
         public GameObject subButtonPrefab;
         public SpecialAttackDetailsUI specialDetails;
-        [SerializeField, Range(0, 4)] private int visibleSpecialSlots = 4;
+        [SerializeField] private UnityEngine.UI.ScrollRect specialScrollRect;
+        [SerializeField] private SpecialMenuCursorUI specialMenuCursor;
+        [SerializeField, Min(0.3f)] private float actionCanvasDistance = 10f;
 
         [Header("End Battle UI")]
         public GameObject endBattlePanel;
@@ -38,31 +40,44 @@ namespace BtlSys.UI
         private readonly List<CombatantUI> heroUIs = new List<CombatantUI>();
         private readonly List<Combatant> potentialTargets = new List<Combatant>();
         private BattleManager battle;
+        private BattleManager subscribedBattle;
         private Combatant currentHero;
         private AttackData pendingAttack;
+        private int pendingAttackUpgradeLevel;
         private bool isTargeting;
         private int currentTargetIndex;
 
         private void OnEnable()
         {
-            battle = BattleManager.Instance;
-            if (battle == null) return;
-            battle.onHeroTurnStarted += ShowActionPanel;
-            battle.onRoundExecutionStarted += HideAllPanels;
-            battle.onBattleEnded += ShowEndBattle;
+            SubscribeToBattle();
         }
 
         private void OnDisable()
         {
-            if (battle == null) return;
-            battle.onHeroTurnStarted -= ShowActionPanel;
-            battle.onRoundExecutionStarted -= HideAllPanels;
-            battle.onBattleEnded -= ShowEndBattle;
+            if (subscribedBattle == null) return;
+            subscribedBattle.onHeroTurnStarted -= ShowActionPanel;
+            subscribedBattle.onRoundExecutionStarted -= HideAllPanels;
+            subscribedBattle.onActionStarted -= ShowActionAnnouncement;
+            subscribedBattle.onActionFinished -= HideActionAnnouncement;
+            subscribedBattle.onBattleEnded -= ShowEndBattle;
+            subscribedBattle = null;
+        }
+
+        private void SubscribeToBattle()
+        {
+            battle = BattleManager.Instance;
+            if (battle == null || subscribedBattle == battle) return;
+            subscribedBattle = battle;
+            battle.onHeroTurnStarted += ShowActionPanel;
+            battle.onRoundExecutionStarted += HideAllPanels;
+            battle.onActionStarted += ShowActionAnnouncement;
+            battle.onActionFinished += HideActionAnnouncement;
+            battle.onBattleEnded += ShowEndBattle;
         }
 
         private void Start()
         {
-            if (battle == null) battle = BattleManager.Instance;
+            SubscribeToBattle();
             if (battle == null || actionPanel == null || subActionPanel == null || heroInfoContainer == null || heroInfoPrefab == null)
             {
                 Debug.LogError("[BattleUI] Required battle UI references are missing.", this);
@@ -83,6 +98,15 @@ namespace BtlSys.UI
             if (continueButton != null) continueButton.onClick.AddListener(ReturnToMap);
             if (restartButton != null) restartButton.onClick.AddListener(RestartRun);
 
+            AddButtonTextStyle(attackButton);
+            AddButtonTextStyle(specialsButton);
+            AddButtonTextStyle(itemsButton);
+            AddButtonTextStyle(reloadButton);
+            AddButtonTextStyle(defendButton);
+            AddButtonTextStyle(backButton);
+            AddButtonTextStyle(continueButton);
+            AddButtonTextStyle(restartButton);
+
             if (battle.currentState == BattleState.PlayerInput && battle.CurrentHero != null)
                 ShowActionPanel(battle.CurrentHero);
             else if (battle.currentState == BattleState.Victory || battle.currentState == BattleState.Defeat)
@@ -94,6 +118,7 @@ namespace BtlSys.UI
         private void Update()
         {
             if (isTargeting) HandleTargeting();
+            else if (subActionPanel != null && subActionPanel.activeSelf && Input.GetKeyDown(KeyCode.Escape)) HideSubMenu();
         }
 
         private void EnsureHeroInfo()
@@ -117,10 +142,31 @@ namespace BtlSys.UI
             isTargeting = false;
 
             Canvas canvas = actionPanel.GetComponentInParent<Canvas>();
-            if (canvas != null && canvas.renderMode == RenderMode.WorldSpace)
-                canvas.transform.position = hero.transform.position + new Vector3(3.5f, 1.5f, -1f);
+            Camera camera = Camera.main;
+            if (canvas != null && canvas.renderMode == RenderMode.WorldSpace && camera != null)
+                canvas.transform.position = camera.ViewportToWorldPoint(
+                    new Vector3(0.5f, 0.5f, actionCanvasDistance));
 
             foreach (CombatantUI ui in heroUIs) ui.SetHighlight(ui.Target == hero);
+
+            AttackData basicAttack = hero != null && hero.data != null ? hero.data.basicAttack : null;
+            TextMeshProUGUI attackLabel = attackButton != null
+                ? attackButton.GetComponentInChildren<TextMeshProUGUI>()
+                : null;
+            if (attackLabel != null)
+                attackLabel.text = "Attack" + (basicAttack != null && basicAttack.MaximumUpgradeLevel > 0
+                    ? " <color=#25D65A>+</color>"
+                    : string.Empty);
+        }
+
+        private void ShowActionAnnouncement(BattleAction action)
+        {
+            if (TooltipUI.Instance != null) TooltipUI.Instance.ShowAction(action);
+        }
+
+        private void HideActionAnnouncement()
+        {
+            if (TooltipUI.Instance != null) TooltipUI.Instance.Hide();
         }
 
         private void HideAllPanels()
@@ -130,8 +176,10 @@ namespace BtlSys.UI
             foreach (CombatantUI ui in heroUIs) ui.SetHighlight(false);
             if (TooltipUI.Instance != null) TooltipUI.Instance.Hide();
             if (SelectionCursorUI.Instance != null) SelectionCursorUI.Instance.SetTarget(null);
+            if (specialMenuCursor != null) specialMenuCursor.Hide();
             isTargeting = false;
             pendingAttack = null;
+            pendingAttackUpgradeLevel = 0;
             if (specialDetails != null) specialDetails.Clear();
         }
 
@@ -144,7 +192,9 @@ namespace BtlSys.UI
                 Debug.LogError($"[BattleUI] {currentHero.name} has no basic attack.");
                 return;
             }
-            SelectOrTarget(attack);
+            int upgradeLevel = ProgressionManager.Instance != null
+                ? ProgressionManager.Instance.GetEquippedUpgradeLevel(currentHero.data, attack) : 0;
+            SelectOrTarget(attack, upgradeLevel);
         }
 
         private void ShowSpecials()
@@ -152,110 +202,120 @@ namespace BtlSys.UI
             if (currentHero == null || currentHero.data == null || subButtonContainer == null || subButtonPrefab == null) return;
             actionPanel.SetActive(false);
             subActionPanel.SetActive(true);
+            if (SelectionCursorUI.Instance != null) SelectionCursorUI.Instance.SetTarget(null);
+            if (specialMenuCursor != null) specialMenuCursor.Hide();
             if (specialDetails != null) specialDetails.Clear();
 
             foreach (Transform child in subButtonContainer)
             {
                 if (backButton == null || child.gameObject != backButton.gameObject)
-                    Destroy(child.gameObject);
-            }
-
-            AttackData firstAttack = null;
-            GameObject firstButton = null;
-            int skillCount = 0;
-            if (currentHero.data.specials != null)
-            {
-                foreach (AttackData attack in currentHero.data.specials)
                 {
-                    if (attack == null || attack == currentHero.data.basicAttack) continue;
-                    GameObject button = CreateSpecialSlot(attack);
-                    if (firstAttack == null)
-                    {
-                        firstAttack = attack;
-                        firstButton = button;
-                    }
-                    skillCount++;
+                    child.gameObject.SetActive(false); // Remove it from layout before deferred destruction.
+                    Destroy(child.gameObject);
                 }
             }
 
-            for (int slot = skillCount; slot < visibleSpecialSlots; slot++)
-                CreateSpecialSlot(null);
-
-            if (specialDetails != null) specialDetails.Show(firstAttack);
-            if (EventSystem.current != null)
+            ProgressionManager progression = ProgressionManager.Instance;
+            if (progression != null)
             {
-                UnityEngine.UI.Button firstChoice = firstButton != null
-                    ? firstButton.GetComponent<UnityEngine.UI.Button>() : null;
-                EventSystem.current.SetSelectedGameObject(firstChoice != null && firstChoice.interactable
-                    ? firstButton : backButton.gameObject);
+                foreach (EquippedSkillState skill in progression.GetEquippedSpecials(currentHero.data))
+                    CreateSpecialSlot(skill.attack, skill.upgradeLevel);
+            }
+            else if (currentHero.data.specials != null)
+            {
+                foreach (AttackData attack in currentHero.data.specials)
+                    if (attack != null && attack != currentHero.data.basicAttack) CreateSpecialSlot(attack, 0);
+            }
+
+            if (specialScrollRect != null)
+            {
+                specialScrollRect.StopMovement();
+                Canvas.ForceUpdateCanvases();
+                specialScrollRect.verticalNormalizedPosition = 1f;
+            }
+            if (specialDetails != null && backButton != null)
+            {
+                SpecialAttackButtonUI backFocus = backButton.GetComponent<SpecialAttackButtonUI>();
+                if (backFocus == null) backFocus = backButton.gameObject.AddComponent<SpecialAttackButtonUI>();
+                backFocus.Bind(null, 0, specialDetails.Show, specialScrollRect, specialMenuCursor);
+            }
+            if (EventSystem.current != null && backButton != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+                EventSystem.current.SetSelectedGameObject(backButton.gameObject);
             }
         }
 
-        private GameObject CreateSpecialSlot(AttackData attack)
+        private GameObject CreateSpecialSlot(AttackData attack, int upgradeLevel)
         {
             GameObject buttonObject = Instantiate(subButtonPrefab, subButtonContainer);
             buttonObject.name = attack != null ? $"{attack.attackName}Button" : "EmptySpecialSlot";
             RectTransform rect = buttonObject.GetComponent<RectTransform>();
             if (rect != null) rect.localScale = Vector3.one;
-            UnityEngine.UI.LayoutElement layout = buttonObject.GetComponent<UnityEngine.UI.LayoutElement>();
-            if (layout == null) layout = buttonObject.AddComponent<UnityEngine.UI.LayoutElement>();
-            layout.preferredHeight = 30f;
-            layout.minHeight = 30f;
-
             TextMeshProUGUI label = buttonObject.GetComponentInChildren<TextMeshProUGUI>();
             if (label != null)
             {
-                label.text = attack == null ? string.Empty : $"{attack.attackName}   {attack.ammoCost} AM";
-                label.alignment = TextAlignmentOptions.Left;
-                label.fontSize = 16;
+                label.text = attack == null ? string.Empty : attack.attackName +
+                    (attack.MaximumUpgradeLevel > 0 ? " <color=#25D65A>+</color>" : string.Empty);
             }
 
             UnityEngine.UI.Button button = buttonObject.GetComponent<UnityEngine.UI.Button>();
             if (button != null)
             {
-                button.interactable = attack != null && currentHero.CanUse(attack);
-                if (attack != null) button.onClick.AddListener(() => SelectOrTarget(attack));
+                AddButtonTextStyle(button);
+                button.interactable = attack != null && currentHero.CanUse(attack, upgradeLevel);
+                if (attack != null) button.onClick.AddListener(() => SelectOrTarget(attack, upgradeLevel));
             }
-            if (attack != null && specialDetails != null)
+            if (specialDetails != null)
             {
                 SpecialAttackButtonUI focus = buttonObject.AddComponent<SpecialAttackButtonUI>();
-                focus.Bind(attack, specialDetails.Show);
+                focus.Bind(attack, upgradeLevel, specialDetails.Show, specialScrollRect, specialMenuCursor);
             }
             return buttonObject;
+        }
+
+        private static void AddButtonTextStyle(UnityEngine.UI.Button button)
+        {
+            if (button != null && button.GetComponent<ButtonInverseTextUI>() == null)
+                button.gameObject.AddComponent<ButtonInverseTextUI>();
         }
 
         private void HideSubMenu()
         {
             subActionPanel.SetActive(false);
             if (specialDetails != null) specialDetails.Clear();
+            if (specialMenuCursor != null) specialMenuCursor.Hide();
             if (currentHero != null && battle.currentState == BattleState.PlayerInput)
                 actionPanel.SetActive(true);
             if (EventSystem.current != null && specialsButton != null)
                 EventSystem.current.SetSelectedGameObject(specialsButton.gameObject);
         }
 
-        private void SelectOrTarget(AttackData attack)
+        private void SelectOrTarget(AttackData attack, int upgradeLevel = 0)
         {
-            if (currentHero == null || !currentHero.CanUse(attack)) return;
-            if (attack.targetType != TargetType.SingleTarget)
+            if (currentHero == null || !currentHero.CanUse(attack, upgradeLevel)) return;
+            AttackRuntimeStats stats = attack.GetRuntimeStats(upgradeLevel);
+            if (stats.TargetType != TargetType.SingleTarget)
             {
-                SelectAction(BattleAction.UseAttack(currentHero, attack, attack.targetType == TargetType.Self ? currentHero : null));
+                SelectAction(BattleAction.UseAttack(currentHero, attack, stats.TargetType == TargetType.Self ? currentHero : null, upgradeLevel));
                 return;
             }
 
             potentialTargets.Clear();
-            IReadOnlyList<Combatant> party = attack.targetAllies ? battle.playerTeam : battle.enemyTeam;
+            IReadOnlyList<Combatant> party = stats.TargetAllies ? battle.playerTeam : battle.enemyTeam;
             foreach (Combatant target in party)
                 if (target != null && target.IsAlive) potentialTargets.Add(target);
             if (potentialTargets.Count == 0) return;
 
             pendingAttack = attack;
+            pendingAttackUpgradeLevel = upgradeLevel;
             currentTargetIndex = 0;
             isTargeting = true;
             actionPanel.SetActive(false);
             subActionPanel.SetActive(false);
+            if (specialMenuCursor != null) specialMenuCursor.Hide();
             if (SelectionCursorUI.Instance != null)
-                SelectionCursorUI.Instance.SetTarget(potentialTargets[0].transform);
+                SelectionCursorUI.Instance.SetTarget(potentialTargets[0].transform, false, potentialTargets[0].isPlayer != currentHero.isPlayer);
         }
 
         private void HandleTargeting()
@@ -275,7 +335,7 @@ namespace BtlSys.UI
                     if (hovered != null && hovered.IsAlive && potentialTargets.Contains(hovered))
                     {
                         currentTargetIndex = potentialTargets.IndexOf(hovered);
-                        if (SelectionCursorUI.Instance != null) SelectionCursorUI.Instance.SetTarget(hovered.transform);
+                        if (SelectionCursorUI.Instance != null) SelectionCursorUI.Instance.SetTarget(hovered.transform, false, hovered.isPlayer != currentHero.isPlayer);
                         if (Input.GetMouseButtonDown(0))
                         {
                             ConfirmTarget();
@@ -299,20 +359,21 @@ namespace BtlSys.UI
         {
             currentTargetIndex = (currentTargetIndex + direction + potentialTargets.Count) % potentialTargets.Count;
             if (SelectionCursorUI.Instance != null)
-                SelectionCursorUI.Instance.SetTarget(potentialTargets[currentTargetIndex].transform);
+                SelectionCursorUI.Instance.SetTarget(potentialTargets[currentTargetIndex].transform, false, potentialTargets[currentTargetIndex].isPlayer != currentHero.isPlayer);
         }
 
         private void ConfirmTarget()
         {
             Combatant target = potentialTargets[currentTargetIndex];
             if (target == null || !target.IsAlive) return;
-            SelectAction(BattleAction.UseAttack(currentHero, pendingAttack, target));
+            SelectAction(BattleAction.UseAttack(currentHero, pendingAttack, target, pendingAttackUpgradeLevel));
         }
 
         private void CancelTargeting()
         {
             isTargeting = false;
             pendingAttack = null;
+            pendingAttackUpgradeLevel = 0;
             if (SelectionCursorUI.Instance != null) SelectionCursorUI.Instance.SetTarget(null);
             if (actionPanel != null) actionPanel.SetActive(true);
         }

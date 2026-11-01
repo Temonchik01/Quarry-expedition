@@ -12,7 +12,10 @@ namespace BtlSys.UI
         public Slider amSlider;
         public TextMeshProUGUI amText;
 
+        [SerializeField] private Color activeCardColor = new Color(1f, 0.85f, 0.55f);
         private Combatant target;
+        private Image cardImage;
+        private Color normalCardColor;
 
         public Combatant Target => target;
 
@@ -48,6 +51,8 @@ namespace BtlSys.UI
             // Set pivot to left center to prevent going off-screen when adjusting anchoredPosition
             RectTransform rect = GetComponent<RectTransform>();
             rect.pivot = new Vector2(0f, 0.5f);
+            cardImage = GetComponent<Image>();
+            if (cardImage != null) normalCardColor = cardImage.color;
         }
 
         private void OnDestroy()
@@ -64,6 +69,7 @@ namespace BtlSys.UI
             // When highlighted, x should be 50 (pushed to the right)
             anchoredPos.x = active ? 50 : 0;
             rect.anchoredPosition = anchoredPos;
+            if (cardImage != null) cardImage.color = active ? activeCardColor : normalCardColor;
         }
     }
 }

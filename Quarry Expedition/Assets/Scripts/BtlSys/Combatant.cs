@@ -40,6 +40,10 @@ namespace BtlSys
 
         private readonly List<TimedStatModifier> modifiers = new List<TimedStatModifier>();
         private int defendBonus;
+        [Header("Status Tint")]
+        [SerializeField] private Color igniteTint = new Color(1f, 0.65f, 0.65f);
+        [SerializeField] private Color paralysisTint = new Color(1f, 0.95f, 0.55f);
+        [SerializeField] private Color corrosionTint = new Color(0.65f, 1f, 0.72f);
         private SpriteRenderer spriteRenderer;
         private Color originalColor = Color.white;
 
@@ -52,13 +56,16 @@ namespace BtlSys
 
         private void Awake()
         {
-            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
-            if (spriteRenderer != null) originalColor = spriteRenderer.color;
             Initialize();
         }
 
         public void Initialize()
         {
+            if (spriteRenderer == null)
+            {
+                spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+                if (spriteRenderer != null) originalColor = spriteRenderer.color;
+            }
             if (data == null)
             {
                 Debug.LogError($"[Combatant] {name} has no CharacterData.", this);
@@ -70,7 +77,7 @@ namespace BtlSys
             statusEffects.Clear();
             modifiers.Clear();
             defendBonus = 0;
-            UpdateDeathVisual();
+            UpdateVisualTint();
             onStatsChanged?.Invoke();
         }
 
@@ -79,13 +86,14 @@ namespace BtlSys
             if (data == null) return;
             currentHP = Mathf.Clamp(hp, 0, data.maxHealth);
             currentAmmo = Mathf.Clamp(ammo, 0, data.maxAmmo);
-            UpdateDeathVisual();
+            UpdateVisualTint();
             onStatsChanged?.Invoke();
         }
 
-        public bool CanUse(AttackData attack)
+        public bool CanUse(AttackData attack, int upgradeLevel = 0)
         {
-            return IsAlive && attack != null && currentAmmo >= Mathf.Max(0, attack.ammoCost);
+            if (!IsAlive || attack == null || !attack.IsUpgradeLevelValid(upgradeLevel)) return false;
+            return currentAmmo >= attack.GetRuntimeStats(upgradeLevel).AmmoCost;
         }
 
         public bool TrySpendAmmo(int amount)
@@ -113,7 +121,7 @@ namespace BtlSys
 
             if (currentHP == 0)
             {
-                UpdateDeathVisual();
+                UpdateVisualTint();
                 Debug.Log($"[Combatant] {name} was defeated.", this);
                 onDeath?.Invoke();
             }
@@ -157,6 +165,7 @@ namespace BtlSys
             {
                 statusEffects.Add(new ActiveStatusEffect(type, turns));
             }
+            UpdateVisualTint();
             onStatsChanged?.Invoke();
             return true;
         }
@@ -189,6 +198,7 @@ namespace BtlSys
                 if (statusEffects[0].remainingTurns <= 0) statusEffects.Clear();
             }
 
+            UpdateVisualTint();
             for (int i = modifiers.Count - 1; i >= 0; i--)
             {
                 modifiers[i].RemainingTurns--;
@@ -218,9 +228,26 @@ namespace BtlSys
             return Mathf.Clamp(value, 0, StatLimit);
         }
 
-        private void UpdateDeathVisual()
+        private void UpdateVisualTint()
         {
-            if (spriteRenderer != null) spriteRenderer.color = IsAlive ? originalColor : Color.black;
+            if (spriteRenderer == null) return;
+            if (!IsAlive)
+            {
+                spriteRenderer.color = Color.black;
+                return;
+            }
+
+            Color tint = Color.white;
+            if (statusEffects.Count > 0)
+            {
+                switch (statusEffects[0].type)
+                {
+                    case StatusEffectType.Ignite: tint = igniteTint; break;
+                    case StatusEffectType.Paralysis: tint = paralysisTint; break;
+                    case StatusEffectType.Corrosion: tint = corrosionTint; break;
+                }
+            }
+            spriteRenderer.color = originalColor * tint;
         }
     }
 }
